@@ -108,7 +108,17 @@ export default function QuizTakingPage() {
     if (!certificateRef.current) return;
 
     try {
-        const dataUrl = await htmlToImage.toPng(certificateRef.current, { cacheBust: true });
+        const dataUrl = await htmlToImage.toPng(certificateRef.current, { 
+            cacheBust: true,
+            // This filter function is the fix. It tells html-to-image to ignore
+            // the external Google Fonts stylesheet, which prevents the cross-origin error.
+            filter: (node) => {
+                if (node.tagName === 'LINK' && (node as HTMLLinkElement).href.includes('fonts.googleapis.com')) {
+                    return false;
+                }
+                return true;
+            },
+        });
         const link = document.createElement('a');
         link.download = `certificate-${quizData?.title.replace(/\s+/g, '-')}.png`;
         link.href = dataUrl;
