@@ -143,7 +143,7 @@ function UserNav({name, email, profileUrl, settingsUrl, onLogout}: {name: string
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={auth.currentUser?.photoURL || "https://placehold.co/40x40.png"} alt="@user" data-ai-hint="person portrait" />
+            <AvatarImage src={auth.currentUser?.photoURL || undefined} alt="@user" />
             <AvatarFallback>{name.charAt(0)}</AvatarFallback>
           </Avatar>
         </Button>

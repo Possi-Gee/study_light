@@ -86,7 +86,7 @@ export default function SettingsPage() {
                         <CardContent className="space-y-6">
                             <div className="flex items-center gap-4">
                                 <Avatar className="h-20 w-20">
-                                    <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} data-ai-hint="person portrait" />
+                                    <AvatarImage src={user?.photoURL || undefined} />
                                     <AvatarFallback>{displayName?.charAt(0) || 'S'}</AvatarFallback>
                                 </Avatar>
                                 <Input

@@ -69,7 +69,7 @@ export default function StudentProgressPage() {
                     <Card className="md:col-span-1">
                         <CardHeader className="items-center text-center">
                             <Avatar className="h-24 w-24 mb-4">
-                                <AvatarImage src={student.avatar} alt={student.name} data-ai-hint="person portrait"/>
+                                <AvatarImage src={student.avatar} alt={student.name} />
                                 <AvatarFallback>{student.initials}</AvatarFallback>
                             </Avatar>
                             <CardTitle>{student.name}</CardTitle>

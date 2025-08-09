@@ -76,7 +76,7 @@ export default function TeacherStudentsPage() {
                                     <TableRow key={student.id}>
                                         <TableCell>
                                             <Avatar>
-                                                <AvatarImage src={student.avatar} alt={student.name} data-ai-hint="person portrait" />
+                                                <AvatarImage src={student.avatar} alt={student.name} />
                                                 <AvatarFallback>{student.initials}</AvatarFallback>
                                             </Avatar>
                                         </TableCell>

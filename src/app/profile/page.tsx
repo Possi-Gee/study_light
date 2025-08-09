@@ -89,7 +89,7 @@ export default function ProfilePage() {
                     <Card className="md:col-span-1">
                         <CardHeader className="items-center text-center">
                             <Avatar className="h-24 w-24 mb-4">
-                                <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} alt="@student" data-ai-hint="person portrait"/>
+                                <AvatarImage src={user?.photoURL || undefined} alt="@student"/>
                                 <AvatarFallback>{user?.displayName?.charAt(0) || 'S'}</AvatarFallback>
                             </Avatar>
                             <CardTitle>{user?.displayName || 'Student'}</CardTitle>
@@ -119,7 +119,7 @@ export default function ProfilePage() {
                                     </DialogHeader>
                                     <div className="py-4 text-center">
                                         <Avatar className="h-32 w-32 mx-auto mb-4">
-                                            <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} alt="@student" data-ai-hint="person portrait"/>
+                                            <AvatarImage src={user?.photoURL || undefined} alt="@student"/>
                                             <AvatarFallback>{user?.displayName?.charAt(0) || 'S'}</AvatarFallback>
                                         </Avatar>
                                         <Input
