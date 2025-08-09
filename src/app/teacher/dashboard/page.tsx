@@ -3,21 +3,58 @@
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { BookMarked, PlusCircle, RefreshCw, HelpCircle, Users } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+type DashboardStats = {
+    subjects: number;
+    quizzes: number;
+    students: number;
+}
 
 export default function TeacherDashboardPage() {
     const { user } = useAuth();
+    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    // Simulate fetching data
+    useEffect(() => {
+        setLoading(true);
+        setTimeout(() => {
+            setStats({
+                subjects: 5,
+                quizzes: 12,
+                students: 84,
+            });
+            setLoading(false);
+        }, 1500);
+    }, []);
+
+    const handleRefresh = () => {
+        setLoading(true);
+        setTimeout(() => {
+            setStats({
+                subjects: Math.floor(Math.random() * 5) + 3,
+                quizzes: Math.floor(Math.random() * 10) + 10,
+                students: Math.floor(Math.random() * 20) + 80,
+            });
+            setLoading(false);
+        }, 1000);
+    }
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
         <div className="flex justify-between items-center">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Welcome, {user?.displayName || 'Teacher'}!</h1>
+                <p className="text-muted-foreground">Here's a summary of your teaching activity.</p>
             </div>
-            <Button variant="outline">
-                <RefreshCw className="mr-2"/>
+            <Button variant="outline" onClick={handleRefresh} disabled={loading}>
+                <RefreshCw className={`mr-2 ${loading ? 'animate-spin' : ''}`}/>
                 Refresh Data
             </Button>
         </div>
@@ -26,9 +63,9 @@ export default function TeacherDashboardPage() {
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardDescription>Manage Notes & Subjects</CardDescription>
-                        <PlusCircle className="w-5 h-5 text-muted-foreground" />
+                        <BookMarked className="w-5 h-5 text-muted-foreground" />
                     </div>
-                    <CardTitle className="text-4xl font-bold">3 Subjects</CardTitle>
+                     {loading ? <Skeleton className="h-10 w-1/2 mt-1"/> : <CardTitle className="text-4xl font-bold">{stats?.subjects} Subjects</CardTitle>}
                     <CardDescription>Create, edit, and assign notes to your subjects.</CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
@@ -45,7 +82,7 @@ export default function TeacherDashboardPage() {
                         <CardDescription>Manage Quizzes</CardDescription>
                         <HelpCircle className="w-5 h-5 text-muted-foreground" />
                     </div>
-                    <CardTitle className="text-4xl font-bold">2 Quizzes</CardTitle>
+                    {loading ? <Skeleton className="h-10 w-1/2 mt-1"/> : <CardTitle className="text-4xl font-bold">{stats?.quizzes} Quizzes</CardTitle>}
                     <CardDescription>Create new quizzes and view student results.</CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
@@ -62,7 +99,7 @@ export default function TeacherDashboardPage() {
                         <CardDescription>Student Overview</CardDescription>
                         <Users className="w-5 h-5 text-muted-foreground" />
                     </div>
-                    <CardTitle className="text-4xl font-bold">1 Students</CardTitle>
+                     {loading ? <Skeleton className="h-10 w-1/2 mt-1"/> : <CardTitle className="text-4xl font-bold">{stats?.students} Students</CardTitle>}
                     <CardDescription>View student progress and quiz history.</CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
