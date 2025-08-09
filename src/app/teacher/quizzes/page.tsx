@@ -152,12 +152,12 @@ export default function TeacherQuizzesPage() {
 
             {/* Quiz Editor/Creator Dialog */}
             <Dialog open={isQuizDialogOpen} onOpenChange={setIsQuizDialogOpen}>
-                <DialogContent className="max-w-3xl">
+                <DialogContent className="max-w-3xl grid-rows-[auto,1fr,auto]">
                     <DialogHeader>
                         <DialogTitle>{editingQuiz ? 'Edit Quiz' : 'Create a New Quiz'}</DialogTitle>
                     </DialogHeader>
-                     <form onSubmit={handleSaveQuiz}>
-                        <div className="grid gap-6 py-4">
+                     <form onSubmit={handleSaveQuiz} className="grid-rows-[1fr,auto] grid h-full overflow-hidden">
+                        <div className="grid gap-6 py-4 overflow-y-auto px-1">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Quiz Title</Label>
                                 <Input id="title" name="title" defaultValue={editingQuiz?.title} placeholder="e.g. World History" required/>
@@ -182,7 +182,7 @@ export default function TeacherQuizzesPage() {
                             </Card>
 
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className="pt-4">
                             <DialogClose asChild>
                                 <Button variant="outline">Cancel</Button>
                             </DialogClose>
