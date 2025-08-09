@@ -140,7 +140,7 @@ export default function EditQuizPage() {
 
     return (
         <AppLayout>
-            <div className="space-y-8">
+            <div className="space-y-8 w-full">
                 <div>
                     <Link href="/teacher/quizzes" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
                         <ArrowLeft className="mr-2 h-4 w-4"/>
