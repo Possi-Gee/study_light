@@ -82,7 +82,7 @@ export default function CreateQuizPage() {
 
     return (
         <AppLayout>
-            <div className="space-y-8 max-w-4xl mx-auto">
+            <div className="space-y-8">
                 <div>
                     <Link href="/teacher/quizzes" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
                         <ArrowLeft className="mr-2 h-4 w-4"/>
