@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { useEffect, useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle, Loader2, RefreshCw, XCircle } from 'lucide-react';
+import { useEffect, useState, useLayoutEffect, useRef } from 'react';
+import { ArrowLeft, ArrowRight, CheckCircle, Download, Loader2, RefreshCw, XCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Quiz } from '@/lib/quiz-store';
 import { getQuizById, addQuizSubmission } from '@/services/quizzes-service';
@@ -15,8 +15,25 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import ReactConfetti from 'react-confetti';
+import { Certificate } from '@/components/certificate';
+import * as htmlToImage from 'html-to-image';
+import { format } from 'date-fns';
 
 type AnswersState = { [key: number]: string };
+
+function useWindowSize() {
+  const [size, setSize] = useState([0, 0]);
+  useLayoutEffect(() => {
+    function updateSize() {
+      setSize([window.innerWidth, window.innerHeight]);
+    }
+    window.addEventListener('resize', updateSize);
+    updateSize();
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+  return size;
+}
 
 export default function QuizTakingPage() {
   const params = useParams();
@@ -33,6 +50,8 @@ export default function QuizTakingPage() {
   const [showResults, setShowResults] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { width, height } = useWindowSize();
+  const certificateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchQuiz() {
@@ -85,6 +104,25 @@ export default function QuizTakingPage() {
     }
   }
 
+  const handleDownloadCertificate = async () => {
+    if (!certificateRef.current) return;
+
+    try {
+        const dataUrl = await htmlToImage.toPng(certificateRef.current, { cacheBust: true });
+        const link = document.createElement('a');
+        link.download = `certificate-${quizData?.title.replace(/\s+/g, '-')}.png`;
+        link.href = dataUrl;
+        link.click();
+    } catch (err) {
+        console.error('oops, something went wrong!', err);
+        toast({
+            variant: "destructive",
+            title: "Download Failed",
+            description: "Could not generate the certificate image.",
+        });
+    }
+  };
+
 
   if (loading) {
     return (
@@ -124,8 +162,22 @@ export default function QuizTakingPage() {
   };
 
   if (showResults) {
+    const isPassing = quizData && score / quizData.questions.length >= 0.7; // 70% to pass
     return (
       <AppLayout>
+        {isPassing && <ReactConfetti width={width} height={height} recycle={false} numberOfPieces={500} />}
+        
+        {/* Hidden certificate for image generation */}
+        <div className="absolute -left-[9999px] -top-[9999px]">
+            <Certificate
+              ref={certificateRef}
+              studentName={user?.displayName || 'Student'}
+              quizTitle={quizData.title}
+              score={`${score}/${quizData.questions.length}`}
+              date={format(new Date(), 'MMMM dd, yyyy')}
+            />
+        </div>
+
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
             <CardTitle>Quiz Results for "{quizData.title}"</CardTitle>
@@ -156,6 +208,10 @@ export default function QuizTakingPage() {
             <Button variant="outline" onClick={() => router.push('/quizzes')}>
                 <ArrowLeft className="mr-2 h-4 w-4"/>
                 Back to Quizzes
+            </Button>
+             <Button variant="default" onClick={handleDownloadCertificate}>
+                <Download className="mr-2 h-4 w-4"/>
+                Download Certificate
             </Button>
           </CardFooter>
         </Card>
