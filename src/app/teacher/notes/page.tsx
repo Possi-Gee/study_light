@@ -4,11 +4,11 @@ import { AppLayout } from "@/components/app-layout";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { BookCopy, Brain, FlaskConical, Globe, PlusCircle, Trash2, Edit } from "lucide-react";
+import { BookCopy, Brain, Eye, FlaskConical, Globe, PlusCircle, Trash2, Edit } from "lucide-react";
 import { useState } from "react";
 
 const initialSubjects = [
@@ -17,9 +17,9 @@ const initialSubjects = [
     name: "Mathematics",
     icon: BookCopy,
     notes: [
-      { id: "note-1", title: "Algebra Basics", content: "An overview of variables, equations, and functions." },
-      { id: "note-2", title: "Introduction to Calculus", content: "Understanding limits, derivatives, and integrals." },
-      { id: "note-3", title: "Geometry Fundamentals", content: "Exploring shapes, angles, and proofs." },
+      { id: "note-1", title: "Algebra Basics", content: "An overview of variables, equations, and functions. This includes linear equations, quadratic equations, and the fundamental theorem of algebra." },
+      { id: "note-2", title: "Introduction to Calculus", content: "Understanding limits, derivatives, and integrals. We will explore the concepts of differentiation and integration and their applications in solving real-world problems." },
+      { id: "note-3", title: "Geometry Fundamentals", content: "Exploring shapes, angles, and proofs. This module covers Euclidean geometry, including points, lines, planes, angles, triangles, and circles." },
     ],
   },
   {
@@ -27,9 +27,9 @@ const initialSubjects = [
     name: "Science",
     icon: FlaskConical,
     notes: [
-      { id: "note-4", title: "The Cell", content: "The basic structural, functional, and biological unit of all known organisms." },
-      { id: "note-5", title: "Newton's Laws of Motion", content: "Three physical laws that form the basis for classical mechanics." },
-      { id: "note-6", title: "Chemical Reactions", content: "A process that leads to the chemical transformation of one set of chemical substances to another." },
+      { id: "note-4", title: "The Cell", content: "The basic structural, functional, and biological unit of all known organisms. We will examine the structure of prokaryotic and eukaryotic cells." },
+      { id: "note-5", title: "Newton's Laws of Motion", content: "Three physical laws that form the basis for classical mechanics. These laws describe the relationship between a body and the forces acting upon it, and its motion in response to those forces." },
+      { id: "note-6", title: "Chemical Reactions", content: "A process that leads to the chemical transformation of one set of chemical substances to another. This includes synthesis, decomposition, single-replacement, and double-replacement reactions." },
     ],
   },
   {
@@ -37,8 +37,8 @@ const initialSubjects = [
     name: "History",
     icon: Globe,
     notes: [
-        { id: "note-7", title: "The Roman Empire", content: "The post-Republican period of ancient Rome." },
-        { id: "note-8", title: "The Renaissance", content: "A period in European history marking the transition from the Middle Ages to modernity." },
+        { id: "note-7", title: "The Roman Empire", content: "The post-Republican period of ancient Rome, characterized by a government headed by emperors and large territorial holdings around the Mediterranean Sea in Europe, Africa, and Asia." },
+        { id: "note-8", title: "The Renaissance", content: "A period in European history marking the transition from the Middle Ages to modernity and covering the 15th and 16th centuries. It is associated with great social change and artistic production." },
     ],
   },
   {
@@ -46,7 +46,7 @@ const initialSubjects = [
       name: "Psychology",
       icon: Brain,
       notes: [
-          { id: "note-9", title: "Introduction to Psychology", content: "The scientific study of mind and behavior." },
+          { id: "note-9", title: "Introduction to Psychology", content: "The scientific study of mind and behavior. Psychology is a multifaceted discipline and includes many sub-fields of study such areas as human development, sports, health, clinical, social behavior and cognitive processes." },
           { id: "note-10", title: "Cognitive Psychology", content: "The study of mental processes such as attention, language use, memory, perception, problem solving, creativity, and thinking." },
       ]
   }
@@ -70,7 +70,9 @@ export default function TeacherNotesPage() {
     const [subjects, setSubjects] = useState<Subject[]>(initialSubjects);
     const [isSubjectDialogOpen, setIsSubjectDialogOpen] = useState(false);
     const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+    const [isViewNoteDialogOpen, setIsViewNoteDialogOpen] = useState(false);
     const [editingNote, setEditingNote] = useState<Note | null>(null);
+    const [viewingNote, setViewingNote] = useState<Note | null>(null);
     const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null);
 
     const handleAddSubject = (e: React.FormEvent<HTMLFormElement>) => {
@@ -97,6 +99,11 @@ export default function TeacherNotesPage() {
         setActiveSubjectId(subjectId);
         setEditingNote(note);
         setIsNoteDialogOpen(true);
+    }
+
+    const openViewNoteDialog = (note: Note) => {
+        setViewingNote(note);
+        setIsViewNoteDialogOpen(true);
     }
     
     const handleSaveNote = (e: React.FormEvent<HTMLFormElement>) => {
@@ -209,9 +216,12 @@ export default function TeacherNotesPage() {
                                                 <div key={note.id} className="p-3 rounded-md border bg-muted/30 flex justify-between items-start">
                                                     <div>
                                                         <h4 className="font-semibold">{note.title}</h4>
-                                                        <p className="text-sm text-muted-foreground mt-1">{note.content}</p>
+                                                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{note.content}</p>
                                                     </div>
                                                     <div className="flex gap-2 shrink-0 ml-4">
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openViewNoteDialog(note)}>
+                                                            <Eye className="h-4 w-4"/>
+                                                        </Button>
                                                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openNoteDialog(subject.id, note)}>
                                                             <Edit className="h-4 w-4"/>
                                                         </Button>
@@ -239,7 +249,7 @@ export default function TeacherNotesPage() {
                 </Card>
             </div>
 
-            {/* Note Dialog */}
+            {/* Note Editor/Creator Dialog */}
             <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
@@ -253,13 +263,33 @@ export default function TeacherNotesPage() {
                             </div>
                             <div className="grid grid-cols-4 items-start gap-4">
                                 <Label htmlFor="content" className="text-right pt-2">Content</Label>
-                                <Textarea id="content" name="content" className="col-span-3" defaultValue={editingNote?.content} placeholder="Note content..." required rows={6}/>
+                                <Textarea id="content" name="content" className="col-span-3" defaultValue={editingNote?.content} placeholder="Note content..." required rows={8}/>
                             </div>
                         </div>
                         <DialogFooter>
                             <Button type="submit">{editingNote ? 'Save Changes' : 'Create Note'}</Button>
                         </DialogFooter>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+             {/* View Note Dialog */}
+            <Dialog open={isViewNoteDialogOpen} onOpenChange={setIsViewNoteDialogOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>{viewingNote?.title}</DialogTitle>
+                        <DialogDescription>
+                            Read the full content of the note below.
+                        </DialogDescription>
+                    </DialogHeader>
+                     <div className="py-4 prose dark:prose-invert max-h-[60vh] overflow-y-auto">
+                        <p>{viewingNote?.content}</p>
+                     </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button>Close</Button>
+                        </DialogClose>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </AppLayout>
