@@ -17,6 +17,3 @@ export type Quiz = {
     subject: string;
     questions: QuizQuestion[];
 };
-
-
-export const subjects = [ "Mathematics", "Science", "History", "Psychology" ];

@@ -8,12 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { subjects, QuizQuestion } from "@/lib/quiz-store";
+import { QuizQuestion } from "@/lib/quiz-store";
 import { addQuiz } from "@/services/quizzes-service";
 import { ArrowLeft, BrainCircuit, Loader2, PlusCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Subject, getSubjects } from "@/services/notes-service";
 
 export default function CreateQuizPage() {
     const router = useRouter();
@@ -22,6 +23,20 @@ export default function CreateQuizPage() {
     const [subject, setSubject] = useState('');
     const [questions, setQuestions] = useState<QuizQuestion[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+
+    useEffect(() => {
+        async function fetchSubjects() {
+            try {
+                const fetchedSubjects = await getSubjects();
+                setSubjects(fetchedSubjects);
+            } catch (error) {
+                console.error("Failed to fetch subjects:", error);
+                toast({ variant: "destructive", title: "Error", description: "Failed to load subjects." });
+            }
+        }
+        fetchSubjects();
+    }, [toast]);
 
     const handleSaveQuiz = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -95,7 +110,7 @@ export default function CreateQuizPage() {
                                         <SelectValue placeholder="Select a subject" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                        {subjects.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             </div>
