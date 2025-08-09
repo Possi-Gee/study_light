@@ -180,10 +180,10 @@ export default function QuizTakingPage() {
             <div className="flex flex-col items-center gap-8 w-full max-w-4xl">
                 {isPassing && <ReactConfetti width={width} height={height} recycle={false} numberOfPieces={500} />}
                 
-                <div className="w-full max-w-2xl">
+                <div className="w-full max-w-2xl text-center">
                     {isPassing ? (
                         <>
-                            <h2 className="text-2xl font-bold text-center mb-4">Congratulations! You earned a certificate.</h2>
+                            <h2 className="text-2xl font-bold mb-4">Congratulations! You earned a certificate.</h2>
                             <Certificate
                                 ref={certificateRef}
                                 studentName={user?.displayName || 'Student'}
@@ -193,7 +193,12 @@ export default function QuizTakingPage() {
                                 />
                         </>
                     ) : (
-                        <h2 className="text-2xl font-bold text-center mb-4">Review your results below.</h2>
+                        <div className="text-center mb-8">
+                            <h2 className="text-3xl font-bold tracking-tight">Almost there!</h2>
+                            <p className="text-muted-foreground mt-2">
+                                Review your results below. Score 70% or higher to earn a certificate.
+                            </p>
+                        </div>
                     )}
                 </div>
 
