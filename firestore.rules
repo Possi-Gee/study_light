@@ -1,12 +1,39 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access to all documents for any authenticated user.
-    // This is a less-restrictive rule to ensure functionality.
-    // We can tighten these rules later if needed.
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Users can read/update their own profile, teachers can read all profiles
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow update: if request.auth.uid == userId;
+      allow create: if isSignedIn();
+    }
+    
+    // Subjects can be read by anyone signed in, but only written by teachers (not yet implemented)
+    match /subjects/{subjectId} {
+      allow read: if isSignedIn();
+      
+      // Notes can be read by anyone signed in
+      match /notes/{noteId} {
+        allow read: if isSignedIn();
+      }
+    }
+    
+    // Quizzes can be read by anyone signed in
+    match /quizzes/{quizId} {
+       allow read, write: if isSignedIn();
+    }
+    
+    // Allow signed-in users to query the submissions collection group
+    match /{path=**}/submissions/{submissionId} {
+      allow read, create: if isSignedIn();
     }
   }
 }

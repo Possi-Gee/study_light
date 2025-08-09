@@ -95,7 +95,7 @@ export async function getSubmissionsForStudent(studentId: string): Promise<QuizS
 
 export async function getSubmissionsForQuiz(quizId: string): Promise<QuizSubmission[]> {
     const q = query(
-        submissionsCollection,
+        collectionGroup(db, 'submissions'),
         where("quizId", "==", quizId),
         orderBy("completedAt", "desc")
     );
