@@ -178,7 +178,7 @@ export default function QuizTakingPage() {
             />
         </div>
 
-        <Card className="max-w-2xl mx-auto">
+        <Card className="max-w-2xl mx-auto w-full">
           <CardHeader>
             <CardTitle>Quiz Results for "{quizData.title}"</CardTitle>
             <CardDescription>You scored {score} out of {quizData.questions.length}!</CardDescription>
@@ -221,46 +221,48 @@ export default function QuizTakingPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-2xl mx-auto">
-         <Link href="/quizzes" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
-            <ArrowLeft className="mr-2 h-4 w-4"/>
-            Back to Quizzes List
-        </Link>
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">{quizData.title}</h1>
-          <p className="text-muted-foreground">Question {currentQuestion + 1} of {quizData.questions.length}</p>
+      <div className="w-full flex flex-col items-center">
+        <div className="w-full max-w-2xl space-y-6">
+            <Link href="/quizzes" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
+                <ArrowLeft className="mr-2 h-4 w-4"/>
+                Back to Quizzes List
+            </Link>
+            <div className="space-y-2 text-center">
+            <h1 className="text-3xl font-bold tracking-tight">{quizData.title}</h1>
+            <p className="text-muted-foreground">Question {currentQuestion + 1} of {quizData.questions.length}</p>
+            </div>
+            <Progress value={((currentQuestion + 1) / quizData.questions.length) * 100} />
+            <Card>
+            <CardHeader>
+                <CardTitle>{quizData.questions[currentQuestion].text}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <RadioGroup onValueChange={handleAnswerSelect} value={answers[currentQuestion]} className="gap-4">
+                {quizData.questions[currentQuestion].options.map((option) => (
+                    <Label key={option} htmlFor={option} className="flex items-center space-x-3 p-4 border rounded-md hover:bg-muted/50 has-[input:checked]:bg-muted has-[input:checked]:border-primary transition-colors cursor-pointer">
+                    <RadioGroupItem value={option} id={option} />
+                    <span className="text-base">{option}</span>
+                    </Label>
+                ))}
+                </RadioGroup>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+                <Button variant="outline" onClick={() => setCurrentQuestion(q => q - 1)} disabled={currentQuestion === 0}>
+                    <ArrowLeft className="mr-2 h-4 w-4"/> Previous
+                </Button>
+                {currentQuestion < quizData.questions.length - 1 ? (
+                <Button onClick={() => setCurrentQuestion(q => q + 1)}>
+                    Next <ArrowRight className="ml-2 h-4 w-4"/>
+                </Button>
+                ) : (
+                <Button onClick={handleFinishQuiz} disabled={Object.keys(answers).length !== quizData.questions.length || isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                    Finish Quiz
+                </Button>
+                )}
+            </CardFooter>
+            </Card>
         </div>
-        <Progress value={((currentQuestion + 1) / quizData.questions.length) * 100} />
-        <Card>
-          <CardHeader>
-            <CardTitle>{quizData.questions[currentQuestion].text}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup onValueChange={handleAnswerSelect} value={answers[currentQuestion]} className="gap-4">
-              {quizData.questions[currentQuestion].options.map((option) => (
-                <Label key={option} htmlFor={option} className="flex items-center space-x-3 p-4 border rounded-md hover:bg-muted/50 has-[input:checked]:bg-muted has-[input:checked]:border-primary transition-colors cursor-pointer">
-                  <RadioGroupItem value={option} id={option} />
-                  <span className="text-base">{option}</span>
-                </Label>
-              ))}
-            </RadioGroup>
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => setCurrentQuestion(q => q - 1)} disabled={currentQuestion === 0}>
-                <ArrowLeft className="mr-2 h-4 w-4"/> Previous
-            </Button>
-            {currentQuestion < quizData.questions.length - 1 ? (
-              <Button onClick={() => setCurrentQuestion(q => q + 1)}>
-                Next <ArrowRight className="ml-2 h-4 w-4"/>
-              </Button>
-            ) : (
-              <Button onClick={handleFinishQuiz} disabled={Object.keys(answers).length !== quizData.questions.length || isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                Finish Quiz
-              </Button>
-            )}
-          </CardFooter>
-        </Card>
       </div>
     </AppLayout>
   );
