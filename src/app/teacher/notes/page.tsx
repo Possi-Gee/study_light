@@ -8,28 +8,69 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useNoteStore, Note, Subject } from "@/lib/note-store";
-import { Eye, PlusCircle, Trash2, Edit } from "lucide-react";
-import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { Note, Subject, getIconForSubject } from "@/lib/note-store";
+import { addSubject, deleteSubject, addNote, updateNote, deleteNote, getSubjects } from "@/services/notes-service";
+import { Eye, PlusCircle, Trash2, Edit, Loader2 } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
 
 export default function TeacherNotesPage() {
-    const { subjects, addSubject, deleteSubject, addNote, updateNote, deleteNote } = useNoteStore();
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
+
     const [isSubjectDialogOpen, setIsSubjectDialogOpen] = useState(false);
     const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
     const [isViewNoteDialogOpen, setIsViewNoteDialogOpen] = useState(false);
+
     const [editingNote, setEditingNote] = useState<Note | null>(null);
     const [viewingNote, setViewingNote] = useState<Note | null>(null);
     const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null);
 
-    const handleAddSubject = (e: React.FormEvent<HTMLFormElement>) => {
+    const fetchSubjects = useCallback(async () => {
+        try {
+            setLoading(true);
+            const fetchedSubjects = await getSubjects();
+            setSubjects(fetchedSubjects);
+        } catch (error) {
+            console.error("Failed to fetch subjects:", error);
+            toast({ variant: "destructive", title: "Error", description: "Could not fetch subjects." });
+        } finally {
+            setLoading(false);
+        }
+    }, [toast]);
+
+    useEffect(() => {
+        fetchSubjects();
+    }, [fetchSubjects]);
+
+    const handleAddSubject = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const subjectName = formData.get('subjectName') as string;
         if (subjectName) {
-            addSubject(subjectName);
-            setIsSubjectDialogOpen(false);
+            try {
+                await addSubject(subjectName);
+                toast({ title: "Success", description: "Subject created." });
+                fetchSubjects(); // Re-fetch
+                setIsSubjectDialogOpen(false);
+            } catch (error) {
+                 toast({ variant: "destructive", title: "Error", description: "Could not create subject." });
+            }
         }
     };
+    
+    const handleDeleteSubject = async (subjectId: string) => {
+        if(confirm("Are you sure you want to delete this subject and all its notes? This cannot be undone.")){
+            try {
+                await deleteSubject(subjectId);
+                toast({ title: "Success", description: "Subject deleted." });
+                fetchSubjects(); // Re-fetch
+            } catch (error) {
+                toast({ variant: "destructive", title: "Error", description: "Could not delete subject." });
+            }
+        }
+    }
 
     const openNoteDialog = (subjectId: string, note: Note | null = null) => {
         setActiveSubjectId(subjectId);
@@ -42,7 +83,7 @@ export default function TeacherNotesPage() {
         setIsViewNoteDialogOpen(true);
     }
     
-    const handleSaveNote = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSaveNote = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!activeSubjectId) return;
 
@@ -50,19 +91,34 @@ export default function TeacherNotesPage() {
         const title = formData.get('title') as string;
         const content = formData.get('content') as string;
 
-        if (editingNote) { // Editing existing note
-            updateNote(activeSubjectId, { ...editingNote, title, content });
-        } else { // Adding new note
-            addNote(activeSubjectId, { title, content });
+        try {
+            if (editingNote) { // Editing existing note
+                await updateNote(activeSubjectId, { ...editingNote, title, content });
+                toast({ title: "Success", description: "Note updated." });
+            } else { // Adding new note
+                await addNote(activeSubjectId, { title, content });
+                toast({ title: "Success", description: "Note created." });
+            }
+            fetchSubjects(); // Re-fetch
+        } catch (error) {
+             toast({ variant: "destructive", title: "Error", description: "Could not save note." });
+        } finally {
+            setIsNoteDialogOpen(false);
+            setEditingNote(null);
+            setActiveSubjectId(null);
         }
-        
-        setIsNoteDialogOpen(false);
-        setEditingNote(null);
-        setActiveSubjectId(null);
     }
 
-    const handleDeleteNoteFromDialog = (subjectId: string, noteId: string) => {
-        deleteNote(subjectId, noteId);
+    const handleDeleteNoteFromDialog = async (subjectId: string, noteId: string) => {
+       if(confirm("Are you sure you want to delete this note?")){
+            try {
+                await deleteNote(subjectId, noteId);
+                toast({ title: "Success", description: "Note deleted." });
+                fetchSubjects(); // Re-fetch
+            } catch (error) {
+                toast({ variant: "destructive", title: "Error", description: "Could not delete note." });
+            }
+       }
     }
 
     return (
@@ -100,12 +156,19 @@ export default function TeacherNotesPage() {
 
                 <Card>
                     <CardContent className="p-4 md:p-6">
+                         {loading ? (
+                            <div className="flex justify-center items-center h-64">
+                                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            </div>
+                         ) : (
                         <Accordion type="multiple" className="w-full">
-                            {subjects.map((subject) => (
+                            {subjects.map((subject) => {
+                                const Icon = getIconForSubject(subject.iconName);
+                                return (
                                 <AccordionItem value={subject.id} key={subject.id}>
                                     <AccordionTrigger className="text-lg font-semibold hover:no-underline">
                                         <div className="flex items-center gap-3">
-                                            <subject.icon className="h-6 w-6 text-primary" />
+                                            <Icon className="h-6 w-6 text-primary" />
                                             {subject.name}
                                         </div>
                                     </AccordionTrigger>
@@ -117,7 +180,7 @@ export default function TeacherNotesPage() {
                                                     <Button variant="outline" size="sm" onClick={() => openNoteDialog(subject.id)}>
                                                         <PlusCircle className="mr-2 h-4 w-4"/> Add Note
                                                     </Button>
-                                                     <Button variant="destructive" size="sm" onClick={() => deleteSubject(subject.id)}>
+                                                     <Button variant="destructive" size="sm" onClick={() => handleDeleteSubject(subject.id)}>
                                                         <Trash2 className="mr-2 h-4 w-4"/> Delete Subject
                                                     </Button>
                                                 </div>
@@ -149,9 +212,10 @@ export default function TeacherNotesPage() {
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>
-                            ))}
+                            )})}
                         </Accordion>
-                         {subjects.length === 0 && (
+                        )}
+                         {!loading && subjects.length === 0 && (
                             <div className="text-center py-12">
                                 <p className="text-muted-foreground">You haven't created any subjects yet.</p>
                                 <Button className="mt-4" onClick={() => setIsSubjectDialogOpen(true)}><PlusCircle className="mr-2"/> Add Your First Subject</Button>
@@ -176,17 +240,11 @@ export default function TeacherNotesPage() {
                             <Label htmlFor="content" className="text-right pt-2">Content</Label>
                             <Textarea id="content" name="content" className="col-span-3" defaultValue={editingNote?.content} placeholder="Note content..." required rows={12}/>
                         </div>
+                         <DialogFooter className="p-6 bg-muted/50 border-t col-span-full">
+                            <Button type="button" variant="ghost" onClick={() => setIsNoteDialogOpen(false)}>Cancel</Button>
+                            <Button type="submit">{editingNote ? 'Save Changes' : 'Create Note'}</Button>
+                        </DialogFooter>
                     </form>
-                    <DialogFooter className="p-6 bg-muted/50 border-t">
-                        <Button type="button" variant="ghost" onClick={() => setIsNoteDialogOpen(false)}>Cancel</Button>
-                        <Button type="submit" onClick={(e) => {
-                            // This is a bit of a hack to submit the form from outside
-                             const form = e.currentTarget.closest('.grid-rows-[auto_1fr_auto]')?.querySelector('form');
-                             if(form){
-                                 form.requestSubmit();
-                             }
-                        }}>{editingNote ? 'Save Changes' : 'Create Note'}</Button>
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 
@@ -212,3 +270,4 @@ export default function TeacherNotesPage() {
         </AppLayout>
     );
 }
+

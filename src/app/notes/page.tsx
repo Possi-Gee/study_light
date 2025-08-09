@@ -3,11 +3,29 @@
 import { AppLayout } from "@/components/app-layout";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent } from "@/components/ui/card";
-import { useNoteStore } from "@/lib/note-store";
+import { getIconForSubject, Subject } from "@/lib/note-store";
+import { getSubjects } from "@/services/notes-service";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 
 export default function NotesPage() {
-  const { subjects } = useNoteStore();
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSubjects() {
+      try {
+        const fetchedSubjects = await getSubjects();
+        setSubjects(fetchedSubjects);
+      } catch (error) {
+        console.error("Failed to fetch subjects:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSubjects();
+  }, []);
 
   return (
     <AppLayout>
@@ -18,32 +36,41 @@ export default function NotesPage() {
         </div>
         <Card>
             <CardContent className="p-4 md:p-6">
+                {loading ? (
+                    <div className="flex justify-center items-center h-64">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                ) : (
                 <Accordion type="single" collapsible className="w-full">
-                    {subjects.map((subject, index) => (
-                        <AccordionItem value={subject.id} key={subject.id}>
-                            <AccordionTrigger className="text-lg font-semibold hover:no-underline">
-                                <div className="flex items-center gap-3">
-                                    <subject.icon className="h-6 w-6 text-primary" />
-                                    {subject.name}
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <div className="pl-9 space-y-2">
-                                {subject.notes.map(note => (
-                                    <div key={note.id} className="p-3 rounded-md border bg-muted/50">
-                                        <h4 className="font-semibold">{note.title}</h4>
-                                        <p className="text-sm text-muted-foreground">{note.content}</p>
+                    {subjects.map((subject) => {
+                        const Icon = getIconForSubject(subject.iconName);
+                        return (
+                            <AccordionItem value={subject.id} key={subject.id}>
+                                <AccordionTrigger className="text-lg font-semibold hover:no-underline">
+                                    <div className="flex items-center gap-3">
+                                        <Icon className="h-6 w-6 text-primary" />
+                                        {subject.name}
                                     </div>
-                                ))}
-                                 {subject.notes.length === 0 && (
-                                    <p className="text-sm text-muted-foreground text-center py-4">No notes available for this subject yet.</p>
-                                )}
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))}
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <div className="pl-9 space-y-2">
+                                    {subject.notes.map(note => (
+                                        <div key={note.id} className="p-3 rounded-md border bg-muted/50">
+                                            <h4 className="font-semibold">{note.title}</h4>
+                                            <p className="text-sm text-muted-foreground">{note.content}</p>
+                                        </div>
+                                    ))}
+                                    {subject.notes.length === 0 && (
+                                        <p className="text-sm text-muted-foreground text-center py-4">No notes available for this subject yet.</p>
+                                    )}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        )
+                    })}
                 </Accordion>
-                {subjects.length === 0 && (
+                )}
+                {!loading && subjects.length === 0 && (
                     <div className="text-center py-12">
                         <p className="text-muted-foreground">No study notes are available at the moment.</p>
                     </div>
