@@ -1,14 +1,16 @@
 
 'use client';
 import { AppLayout } from "@/components/app-layout";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
+import { getInitials } from "@/lib/utils";
 import { getSubjectsCount } from "@/services/notes-service";
 import { getQuizzesCount } from "@/services/quizzes-service";
 import { getStudentsCount } from "@/services/user-service";
-import { BookMarked, PlusCircle, RefreshCw, HelpCircle, Users } from "lucide-react";
+import { BookMarked, Edit, Mail, PlusCircle, RefreshCw, HelpCircle, Users, Shield, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 
@@ -65,6 +67,36 @@ export default function TeacherDashboardPage() {
             </Button>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+             <Card className="flex flex-col lg:col-span-1">
+                <CardHeader className="items-center text-center">
+                    <Avatar className="h-24 w-24 mb-4">
+                        <AvatarImage src={user?.photoURL || undefined} alt="@teacher"/>
+                        <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+                    </Avatar>
+                    <CardTitle>{user?.displayName || 'Teacher'}</CardTitle>
+                    <CardDescription>{user?.email}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                    <div className="flex items-center">
+                        <User className="mr-2 h-4 w-4 text-muted-foreground"/>
+                        <span>Name: {user?.displayName || 'Teacher'}</span>
+                    </div>
+                    <div className="flex items-center">
+                        <Mail className="mr-2 h-4 w-4 text-muted-foreground"/>
+                        <span>Email: {user?.email}</span>
+                    </div>
+                    <div className="flex items-center">
+                        <Shield className="mr-2 h-4 w-4 text-muted-foreground"/>
+                        <span>Role: Teacher</span>
+                    </div>
+                     <Link href="/teacher/settings">
+                        <Button variant="outline" className="w-full mt-2">
+                            <Edit className="mr-2 h-4 w-4"/>
+                            Edit Profile
+                        </Button>
+                    </Link>
+                </CardContent>
+            </Card>
             <Card className="flex flex-col">
                 <CardHeader>
                     <div className="flex justify-between items-center">
@@ -99,7 +131,7 @@ export default function TeacherDashboardPage() {
                     </Link>
                 </CardContent>
             </Card>
-            <Card className="flex flex-col lg:col-span-1">
+            <Card className="flex flex-col lg:col-span-3">
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardDescription>Student Overview</CardDescription>
