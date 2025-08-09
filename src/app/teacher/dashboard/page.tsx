@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
-import { getSubjectsCount } from "@/services/notes-service";
-import { getQuizzesCount } from "@/services/quizzes-service";
-import { getStudentsCount } from "@/services/user-service";
+import { getSubjects } from "@/services/notes-service";
+import { getQuizzes } from "@/services/quizzes-service";
+import { getStudents } from "@/services/user-service";
 import { BookMarked, RefreshCw, HelpCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
@@ -26,15 +26,15 @@ export default function TeacherDashboardPage() {
     const fetchStats = useCallback(async () => {
         setLoading(true);
         try {
-            const [subjectsCount, quizzesCount, studentsCount] = await Promise.all([
-                getSubjectsCount(),
-                getQuizzesCount(),
-                getStudentsCount(),
+            const [subjects, quizzes, students] = await Promise.all([
+                getSubjects(),
+                getQuizzes(),
+                getStudents(),
             ]);
             setStats({
-                subjects: subjectsCount,
-                quizzes: quizzesCount,
-                students: studentsCount,
+                subjects: subjects.length,
+                quizzes: quizzes.length,
+                students: students.length,
             });
         } catch (error) {
             console.error("Failed to fetch dashboard stats:", error);

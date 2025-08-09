@@ -4,7 +4,7 @@ import { auth, db, storage } from "@/lib/firebase";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { User, updateProfile } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { doc, setDoc, getDoc, collection, getDocs, query, where, getCountFromServer } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 
 export type UserProfile = {
   uid: string;
@@ -34,14 +34,6 @@ export async function getStudents(): Promise<UserProfile[]> {
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => doc.data() as UserProfile);
 }
-
-export async function getStudentsCount(): Promise<number> {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("role", "==", "student"));
-    const snapshot = await getCountFromServer(q);
-    return snapshot.data().count;
-}
-
 
 export async function uploadAvatarAndUpdateProfile(file: File) {
   const currentUser = auth.currentUser;
