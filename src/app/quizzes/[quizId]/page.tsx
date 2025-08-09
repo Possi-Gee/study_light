@@ -180,7 +180,7 @@ export default function QuizTakingPage() {
             {isPassing && <ReactConfetti width={width} height={height} recycle={false} numberOfPieces={500} />}
             
             {isPassing ? (
-                 <div className="w-full">
+                 <div className="w-full max-w-2xl">
                      <h2 className="text-2xl font-bold text-center mb-4">Congratulations! You earned a certificate.</h2>
                     <Certificate
                         ref={certificateRef}
@@ -240,7 +240,7 @@ export default function QuizTakingPage() {
 
   return (
     <AppLayout>
-      <div className="w-full flex justify-center p-4">
+      <div className="flex justify-center p-4">
         <div className="w-full max-w-2xl space-y-6">
             <Link href="/quizzes" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
                 <ArrowLeft className="mr-2 h-4 w-4"/>
