@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Eye } from "lucide-react";
+import Link from "next/link";
 
 const students = [
     {
@@ -82,10 +83,12 @@ export default function TeacherStudentsPage() {
                                         <TableCell className="font-medium">{student.name}</TableCell>
                                         <TableCell className="text-muted-foreground">{student.email}</TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="outline" size="sm">
-                                                <Eye className="mr-2 h-4 w-4"/>
-                                                View Progress
-                                            </Button>
+                                            <Link href={`/teacher/students/${student.id}`}>
+                                                <Button variant="outline" size="sm">
+                                                    <Eye className="mr-2 h-4 w-4"/>
+                                                    View Progress
+                                                </Button>
+                                            </Link>
                                         </TableCell>
                                     </TableRow>
                                 ))}
