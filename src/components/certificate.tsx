@@ -16,40 +16,43 @@ export const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
     return (
       <div
         ref={ref}
-        className="w-[800px] h-[600px] bg-slate-800 text-white p-10 flex flex-col font-serif"
+        className="w-full aspect-[4/3] bg-slate-800 text-white p-6 sm:p-10 flex flex-col font-serif"
         style={{ fontFamily: 'Lora, serif' }}
       >
-        <div className="flex-grow flex flex-col justify-center items-center text-center border-4 border-amber-400 p-8 rounded-lg">
-          <div className="mb-4">
-            <GraduationCap className="h-20 w-20 text-amber-400" />
+        <div className="flex-grow flex flex-col justify-center items-center text-center border-4 border-amber-400 p-4 sm:p-8 rounded-lg relative">
+           <div className="absolute top-4 left-4 text-left">
+             <h2 className="text-xl font-bold tracking-wider text-amber-300">SmartStudy Lite</h2>
+           </div>
+          <div className="mb-2 sm:mb-4 mt-8 sm:mt-0">
+            <GraduationCap className="h-12 w-12 sm:h-20 sm:w-20 text-amber-400" />
           </div>
-          <h1 className="text-5xl font-bold text-amber-400 tracking-wider">
+          <h1 className="text-3xl sm:text-5xl font-bold text-amber-400 tracking-wider">
             Certificate of Achievement
           </h1>
-          <p className="mt-6 text-xl">This certificate is proudly presented to</p>
-          <p className="mt-4 text-4xl font-extrabold text-white tracking-wide underline decoration-amber-400">
+          <p className="mt-3 sm:mt-6 text-base sm:text-xl">This certificate is proudly presented to</p>
+          <p className="mt-2 sm:mt-4 text-2xl sm:text-4xl font-extrabold text-white tracking-wide underline decoration-amber-400">
             {studentName}
           </p>
-          <p className="mt-6 text-xl">
+          <p className="mt-3 sm:mt-6 text-base sm:text-xl">
             for successfully completing the quiz
           </p>
-          <p className="mt-2 text-3xl font-semibold text-amber-300">
+          <p className="mt-1 sm:mt-2 text-xl sm:text-3xl font-semibold text-amber-300">
             "{quizTitle}"
           </p>
-          <p className="mt-6 text-xl">with a score of</p>
-          <p className="mt-2 text-3xl font-bold text-white">{score}</p>
-          <div className="flex justify-between w-full mt-auto pt-8">
+          <p className="mt-3 sm:mt-6 text-base sm:text-xl">with a score of</p>
+          <p className="mt-1 sm:mt-2 text-xl sm:text-3xl font-bold text-white">{score}</p>
+          <div className="flex justify-between w-full mt-auto pt-4 sm:pt-8 text-xs sm:text-base">
             <div className="text-center">
-              <p className="text-lg font-semibold border-t-2 border-amber-400 pt-1 px-4">
+              <p className="font-semibold border-t-2 border-amber-400 pt-1 px-2 sm:px-4">
                 SmartStudy Lite
               </p>
-              <p className="text-sm">Authorized Platform</p>
+              <p className="text-xs sm:text-sm">Authorized Platform</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-semibold border-t-2 border-amber-400 pt-1 px-4">
+              <p className="font-semibold border-t-2 border-amber-400 pt-1 px-2 sm:px-4">
                 {date}
               </p>
-              <p className="text-sm">Date of Completion</p>
+              <p className="text-xs sm:text-sm">Date of Completion</p>
             </div>
           </div>
         </div>

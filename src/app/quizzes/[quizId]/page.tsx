@@ -110,8 +110,6 @@ export default function QuizTakingPage() {
     try {
         const dataUrl = await htmlToImage.toPng(certificateRef.current, { 
             cacheBust: true,
-            // This filter function is the fix. It tells html-to-image to ignore
-            // the external Google Fonts stylesheet, which prevents the cross-origin error.
             filter: (node) => {
                 if (node.tagName === 'LINK' && (node as HTMLLinkElement).href.includes('fonts.googleapis.com')) {
                     return false;
@@ -175,63 +173,71 @@ export default function QuizTakingPage() {
     const isPassing = quizData && score / quizData.questions.length >= 0.7; // 70% to pass
     return (
       <AppLayout>
-        {isPassing && <ReactConfetti width={width} height={height} recycle={false} numberOfPieces={500} />}
-        
-        {/* Hidden certificate for image generation */}
-        <div className="absolute -left-[9999px] -top-[9999px]">
-            <Certificate
-              ref={certificateRef}
-              studentName={user?.displayName || 'Student'}
-              quizTitle={quizData.title}
-              score={`${score}/${quizData.questions.length}`}
-              date={format(new Date(), 'MMMM dd, yyyy')}
-            />
-        </div>
+        <div className="flex flex-col items-center gap-8 w-full">
+            {isPassing && <ReactConfetti width={width} height={height} recycle={false} numberOfPieces={500} />}
+            
+            {isPassing ? (
+                 <div className="w-full max-w-4xl">
+                     <h2 className="text-2xl font-bold text-center mb-4">Congratulations! You earned a certificate.</h2>
+                    <Certificate
+                        ref={certificateRef}
+                        studentName={user?.displayName || 'Student'}
+                        quizTitle={quizData.title}
+                        score={`${score}/${quizData.questions.length}`}
+                        date={format(new Date(), 'MMMM dd, yyyy')}
+                        />
+                 </div>
+            ) : (
+                 <h2 className="text-2xl font-bold text-center mb-4">Review your results below.</h2>
+            )}
 
-        <Card className="max-w-2xl mx-auto w-full">
-          <CardHeader>
-            <CardTitle>Quiz Results for "{quizData.title}"</CardTitle>
-            <CardDescription>You scored {score} out of {quizData.questions.length}!</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {quizData.questions.map((q, index) => (
-              <div key={index} className="p-4 border rounded-md bg-muted/30">
-                <p className="font-semibold">{index + 1}. {q.text}</p>
-                <div className="flex items-center mt-2">
-                  {answers[index] === q.correctAnswer ? (
-                    <CheckCircle className="h-5 w-5 text-success mr-2 shrink-0" />
-                  ) : (
-                    <XCircle className="h-5 w-5 text-destructive mr-2 shrink-0" />
-                  )}
-                  <p className={answers[index] === q.correctAnswer ? 'text-success' : 'text-destructive'}>
-                    Your answer: {answers[index] || 'Not answered'}. Correct answer: {q.correctAnswer}
-                  </p>
+            <Card className="max-w-2xl mx-auto w-full">
+            <CardHeader>
+                <CardTitle>Quiz Results for "{quizData.title}"</CardTitle>
+                <CardDescription>You scored {score} out of {quizData.questions.length}!</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {quizData.questions.map((q, index) => (
+                <div key={index} className="p-4 border rounded-md bg-muted/30">
+                    <p className="font-semibold">{index + 1}. {q.text}</p>
+                    <div className="flex items-center mt-2">
+                    {answers[index] === q.correctAnswer ? (
+                        <CheckCircle className="h-5 w-5 text-success mr-2 shrink-0" />
+                    ) : (
+                        <XCircle className="h-5 w-5 text-destructive mr-2 shrink-0" />
+                    )}
+                    <p className={answers[index] === q.correctAnswer ? 'text-success' : 'text-destructive'}>
+                        Your answer: {answers[index] || 'Not answered'}. Correct answer: {q.correctAnswer}
+                    </p>
+                    </div>
                 </div>
-              </div>
-            ))}
-          </CardContent>
-          <CardFooter className="flex-col sm:flex-row gap-2">
-            <Button onClick={restartQuiz}>
-              <RefreshCw className="mr-2 h-4 w-4"/>
-              Try Again
-            </Button>
-            <Button variant="outline" onClick={() => router.push('/quizzes')}>
-                <ArrowLeft className="mr-2 h-4 w-4"/>
-                Back to Quizzes
-            </Button>
-             <Button variant="default" onClick={handleDownloadCertificate}>
-                <Download className="mr-2 h-4 w-4"/>
-                Download Certificate
-            </Button>
-          </CardFooter>
-        </Card>
+                ))}
+            </CardContent>
+            <CardFooter className="flex-col sm:flex-row gap-2">
+                <Button onClick={restartQuiz}>
+                <RefreshCw className="mr-2 h-4 w-4"/>
+                Try Again
+                </Button>
+                <Button variant="outline" onClick={() => router.push('/quizzes')}>
+                    <ArrowLeft className="mr-2 h-4 w-4"/>
+                    Back to Quizzes
+                </Button>
+                {isPassing && (
+                    <Button variant="default" onClick={handleDownloadCertificate}>
+                        <Download className="mr-2 h-4 w-4"/>
+                        Download Certificate
+                    </Button>
+                )}
+            </CardFooter>
+            </Card>
+        </div>
       </AppLayout>
     );
   }
 
   return (
     <AppLayout>
-      <div className="w-full flex flex-col items-center">
+      <div className="w-full flex justify-center">
         <div className="w-full max-w-2xl space-y-6">
             <Link href="/quizzes" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
                 <ArrowLeft className="mr-2 h-4 w-4"/>
