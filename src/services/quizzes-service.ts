@@ -89,7 +89,7 @@ export async function addQuizSubmission(submissionData: Omit<QuizSubmission, 'id
 
 export async function getSubmissionsForStudent(studentId: string): Promise<QuizSubmission[]> {
     const q = query(
-        collectionGroup(db, "submissions"),
+        submissionsCollection,
         where("studentId", "==", studentId),
         orderBy("completedAt", "desc")
     );
@@ -102,7 +102,7 @@ export async function getSubmissionsForStudent(studentId: string): Promise<QuizS
 
 export async function getSubmissionsForQuiz(quizId: string): Promise<QuizSubmission[]> {
     const q = query(
-        collectionGroup(db, 'submissions'),
+        submissionsCollection,
         where("quizId", "==", quizId),
         orderBy("completedAt", "desc")
     );
