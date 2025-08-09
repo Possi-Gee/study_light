@@ -18,6 +18,7 @@ import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { getUserById } from "@/services/user-service";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,26 +35,30 @@ export default function LoginPage() {
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
       
       toast({
         title: "Login Successful",
         description: "Welcome back!",
       });
 
-      // NOTE: In a real-world scenario, role management would be more robust.
-      // We would check custom claims or a Firestore document to determine the user's role.
-      // For this prototype, we will check the email for the word 'teacher'.
-      if (userCredential.user.email?.includes('teacher')) {
+      // Fetch user role from Firestore
+      const userProfile = await getUserById(user.uid);
+      
+      if (userProfile && userProfile.role === 'teacher') {
           router.push('/teacher/dashboard');
       } else {
           router.push('/');
       }
+
     } catch (error: any) {
       console.error("Login error:", error);
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message || "Invalid email or password.",
+        description: error.code === 'auth/invalid-credential' 
+            ? "Invalid email or password."
+            : error.message || "An unknown error occurred.",
       });
     } finally {
       setIsLoading(false);

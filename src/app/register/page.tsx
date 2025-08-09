@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
 import { auth } from "@/lib/firebase"
+import { addUser } from "@/services/user-service";
 
 export default function RegisterPage() {
   const [role, setRole] = useState('student');
@@ -50,10 +51,17 @@ export default function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      await updateProfile(user, { displayName: fullName });
-
-      // In a real app, you'd likely save the role to Firestore or a custom claim.
-      // For now, we'll rely on client-side logic after login.
+      // We run these in parallel to make it faster
+      await Promise.all([
+          updateProfile(user, { displayName: fullName }),
+          addUser({ 
+              uid: user.uid, 
+              name: fullName, 
+              email: user.email!, // email is guaranteed to exist for email/password auth
+              role: role,
+              photoURL: user.photoURL 
+          })
+      ]);
 
       toast({
         title: "Account Created!",

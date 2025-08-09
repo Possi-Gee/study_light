@@ -1,8 +1,40 @@
 
-import { auth, storage } from "@/lib/firebase";
+
+import { auth, db, storage } from "@/lib/firebase";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { User, updateProfile } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, setDoc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
+
+export type UserProfile = {
+  uid: string;
+  name: string;
+  email: string;
+  role: 'student' | 'teacher';
+  photoURL: string | null;
+}
+
+export async function addUser(userData: UserProfile): Promise<void> {
+    const userRef = doc(db, "users", userData.uid);
+    await setDoc(userRef, userData);
+}
+
+export async function getUserById(uid: string): Promise<UserProfile | null> {
+    const userRef = doc(db, "users", uid);
+    const docSnap = await getDoc(userRef);
+    if (docSnap.exists()) {
+        return docSnap.data() as UserProfile;
+    }
+    return null;
+}
+
+export async function getStudents(): Promise<UserProfile[]> {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("role", "==", "student"));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => doc.data() as UserProfile);
+}
+
 
 export async function uploadAvatarAndUpdateProfile(file: File) {
   const currentUser = auth.currentUser;
