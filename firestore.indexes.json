@@ -3,7 +3,7 @@
   "indexes": [
     {
       "collectionGroup": "submissions",
-      "queryScope": "COLLECTION",
+      "queryScope": "COLLECTION_GROUP",
       "fields": [
         {
           "fieldPath": "quizId",
@@ -17,7 +17,7 @@
     },
     {
       "collectionGroup": "submissions",
-      "queryScope": "COLLECTION",
+      "queryScope": "COLLECTION_GROUP",
       "fields": [
         {
           "fieldPath": "studentId",
