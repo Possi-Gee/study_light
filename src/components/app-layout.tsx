@@ -47,6 +47,7 @@ import { signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { getInitials } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
+import { Footer } from "./footer";
 
 const studentNavItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -150,6 +151,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
             {children}
         </main>
+        <Footer />
       </SidebarInset>
     </SidebarProvider>
   );
