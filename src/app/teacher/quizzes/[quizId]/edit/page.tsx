@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { Subject, getSubjects } from "@/services/notes-service";
+import { GenerateQuestionsDialog } from "@/components/generate-questions-dialog";
 
 export default function EditQuizPage() {
     const router = useRouter();
@@ -29,6 +30,7 @@ export default function EditQuizPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
 
     useEffect(() => {
         async function fetchSubjects() {
@@ -109,6 +111,15 @@ export default function EditQuizPage() {
             return q;
         }));
     };
+    
+    const handleAiQuestionsGenerated = (generatedQuestions: QuizQuestion[]) => {
+        setQuestions(prev => [...prev, ...generatedQuestions]);
+        toast({
+            title: "Success!",
+            description: `${generatedQuestions.length} questions have been added to your quiz.`
+        })
+    }
+
 
     if (loading) {
         return (
@@ -140,7 +151,7 @@ export default function EditQuizPage() {
 
     return (
         <AppLayout>
-            <div className="flex flex-col space-y-8">
+            <div className="flex flex-col space-y-8 w-full">
                 <div>
                     <Link href="/teacher/quizzes" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
                         <ArrowLeft className="mr-2 h-4 w-4"/>
@@ -222,10 +233,15 @@ export default function EditQuizPage() {
                                 <Button type="button" variant="outline" onClick={addQuestion}>
                                     <PlusCircle className="mr-2"/> Add Question Manually
                                 </Button>
-
-                                <Button type="button">
-                                    <BrainCircuit className="mr-2"/> Generate Questions with AI
-                                </Button>
+                                <GenerateQuestionsDialog
+                                    open={isAiDialogOpen}
+                                    onOpenChange={setIsAiDialogOpen}
+                                    onQuestionsGenerated={handleAiQuestionsGenerated}
+                                >
+                                    <Button type="button">
+                                        <BrainCircuit className="mr-2"/> Generate Questions with AI
+                                    </Button>
+                                </GenerateQuestionsDialog>
                             </div>
                         </CardContent>
                     </Card>
