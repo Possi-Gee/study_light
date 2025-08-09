@@ -1,3 +1,6 @@
+
+'use client';
+
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -10,8 +13,23 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { GraduationCap } from "lucide-react"
 import Link from "next/link"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
+  const [role, setRole] = useState('student');
+  const router = useRouter();
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (role === 'student') {
+      router.push('/');
+    } else {
+      router.push('/teacher/dashboard');
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
         <Card className="mx-auto max-w-sm w-full">
@@ -25,7 +43,7 @@ export default function RegisterPage() {
             </CardDescription>
         </CardHeader>
         <CardContent>
-            <form className="grid gap-4">
+            <form className="grid gap-4" onSubmit={handleRegister}>
                 <div className="grid gap-2">
                     <Label htmlFor="full-name">Full name</Label>
                     <Input id="full-name" placeholder="John Doe" required />
@@ -43,8 +61,21 @@ export default function RegisterPage() {
                     <Label htmlFor="password">Password</Label>
                     <Input id="password" type="password" required/>
                 </div>
-                <Button type="submit" className="w-full" asChild>
-                    <Link href="/">Create an account</Link>
+                <div className="grid gap-2">
+                    <Label>Role</Label>
+                    <RadioGroup defaultValue="student" onValueChange={setRole} className="flex gap-4">
+                        <Label htmlFor="student" className="flex items-center space-x-2 p-3 border rounded-md has-[input:checked]:bg-muted has-[input:checked]:border-primary transition-colors cursor-pointer flex-1 justify-center">
+                            <RadioGroupItem value="student" id="student" />
+                            <span>Student</span>
+                        </Label>
+                        <Label htmlFor="teacher" className="flex items-center space-x-2 p-3 border rounded-md has-[input:checked]:bg-muted has-[input:checked]:border-primary transition-colors cursor-pointer flex-1 justify-center">
+                            <RadioGroupItem value="teacher" id="teacher" />
+                            <span>Teacher</span>
+                        </Label>
+                    </RadioGroup>
+                </div>
+                <Button type="submit" className="w-full">
+                    Create an account
                 </Button>
             </form>
             <div className="mt-4 text-center text-sm">

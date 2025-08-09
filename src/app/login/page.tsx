@@ -11,22 +11,24 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 export default function LoginPage() {
-  const [role, setRole] = useState('student');
   const router = useRouter();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (role === 'student') {
-      router.push('/');
+    // This is a simplified login. In a real app, you'd check credentials
+    // and role, then redirect. For now, we'll assume a student logs in.
+    // Teacher login can be handled differently, e.g. a separate portal or logic.
+    const email = (e.currentTarget.elements.namedItem('email') as HTMLInputElement).value;
+
+    if (email.toLowerCase().includes('teacher')) {
+        router.push('/teacher/dashboard');
     } else {
-      router.push('/teacher/dashboard');
+        router.push('/');
     }
   };
 
@@ -61,19 +63,6 @@ export default function LoginPage() {
                 </Link>
               </div>
               <Input id="password" type="password" required />
-            </div>
-            <div className="grid gap-2">
-                <Label>Role</Label>
-                <RadioGroup defaultValue="student" onValueChange={setRole} className="flex gap-4">
-                    <Label htmlFor="student" className="flex items-center space-x-2 p-3 border rounded-md has-[input:checked]:bg-muted has-[input:checked]:border-primary transition-colors cursor-pointer flex-1 justify-center">
-                        <RadioGroupItem value="student" id="student" />
-                        <span>Student</span>
-                    </Label>
-                    <Label htmlFor="teacher" className="flex items-center space-x-2 p-3 border rounded-md has-[input:checked]:bg-muted has-[input:checked]:border-primary transition-colors cursor-pointer flex-1 justify-center">
-                        <RadioGroupItem value="teacher" id="teacher" />
-                        <span>Teacher</span>
-                    </Label>
-                </RadioGroup>
             </div>
             <Button type="submit" className="w-full">
               Login
