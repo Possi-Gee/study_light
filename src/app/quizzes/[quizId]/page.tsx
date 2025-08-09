@@ -1,0 +1,146 @@
+
+'use client';
+
+import { AppLayout } from '@/components/app-layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { useState } from 'react';
+import { ArrowLeft, ArrowRight, CheckCircle, RefreshCw, XCircle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { useQuizStore } from '@/lib/quiz-store';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+
+type AnswersState = { [key: number]: string };
+
+export default function QuizTakingPage() {
+  const params = useParams();
+  const router = useRouter();
+  const quizId = params.quizId as string;
+  const { getQuizById } = useQuizStore();
+  const quizData = getQuizById(quizId);
+
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<AnswersState>({});
+  const [showResults, setShowResults] = useState(false);
+
+  if (!quizData) {
+     return (
+      <AppLayout>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Quiz not found</h1>
+          <p className="text-muted-foreground">This quiz may have been removed.</p>
+          <Link href="/quizzes">
+            <Button variant="outline" className="mt-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Quizzes
+            </Button>
+          </Link>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const handleAnswerSelect = (value: string) => {
+    setAnswers((prev) => ({ ...prev, [currentQuestion]: value }));
+  };
+
+  const score = Object.keys(answers).reduce((acc, key) => {
+    const qIndex = parseInt(key, 10);
+    if (answers[qIndex] === quizData.questions[qIndex].correctAnswer) {
+      return acc + 1;
+    }
+    return acc;
+  }, 0);
+
+  const restartQuiz = () => {
+    setCurrentQuestion(0);
+    setAnswers({});
+    setShowResults(false);
+  };
+
+  if (showResults) {
+    return (
+      <AppLayout>
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle>Quiz Results for "{quizData.title}"</CardTitle>
+            <CardDescription>You scored {score} out of {quizData.questions.length}!</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {quizData.questions.map((q, index) => (
+              <div key={index} className="p-4 border rounded-md bg-muted/30">
+                <p className="font-semibold">{index + 1}. {q.text}</p>
+                <div className="flex items-center mt-2">
+                  {answers[index] === q.correctAnswer ? (
+                    <CheckCircle className="h-5 w-5 text-success mr-2 shrink-0" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-destructive mr-2 shrink-0" />
+                  )}
+                  <p className={answers[index] === q.correctAnswer ? 'text-success' : 'text-destructive'}>
+                    Your answer: {answers[index] || 'Not answered'}. Correct answer: {q.correctAnswer}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+          <CardFooter className="flex-col sm:flex-row gap-2">
+            <Button onClick={restartQuiz}>
+              <RefreshCw className="mr-2 h-4 w-4"/>
+              Try Again
+            </Button>
+            <Button variant="outline" onClick={() => router.push('/quizzes')}>
+                <ArrowLeft className="mr-2 h-4 w-4"/>
+                Back to Quizzes
+            </Button>
+          </CardFooter>
+        </Card>
+      </AppLayout>
+    );
+  }
+
+  return (
+    <AppLayout>
+      <div className="space-y-6 max-w-2xl mx-auto">
+         <Link href="/quizzes" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4"/>
+            Back to Quizzes List
+        </Link>
+        <div className="space-y-2 text-center">
+          <h1 className="text-3xl font-bold tracking-tight">{quizData.title}</h1>
+          <p className="text-muted-foreground">Question {currentQuestion + 1} of {quizData.questions.length}</p>
+        </div>
+        <Progress value={((currentQuestion + 1) / quizData.questions.length) * 100} />
+        <Card>
+          <CardHeader>
+            <CardTitle>{quizData.questions[currentQuestion].text}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RadioGroup onValueChange={handleAnswerSelect} value={answers[currentQuestion]} className="gap-4">
+              {quizData.questions[currentQuestion].options.map((option) => (
+                <Label key={option} htmlFor={option} className="flex items-center space-x-3 p-4 border rounded-md hover:bg-muted/50 has-[input:checked]:bg-muted has-[input:checked]:border-primary transition-colors cursor-pointer">
+                  <RadioGroupItem value={option} id={option} />
+                  <span className="text-base">{option}</span>
+                </Label>
+              ))}
+            </RadioGroup>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button variant="outline" onClick={() => setCurrentQuestion(q => q - 1)} disabled={currentQuestion === 0}>
+                <ArrowLeft className="mr-2 h-4 w-4"/> Previous
+            </Button>
+            {currentQuestion < quizData.questions.length - 1 ? (
+              <Button onClick={() => setCurrentQuestion(q => q + 1)}>
+                Next <ArrowRight className="ml-2 h-4 w-4"/>
+              </Button>
+            ) : (
+              <Button onClick={() => setShowResults(true)} disabled={Object.keys(answers).length !== quizData.questions.length}>Finish Quiz</Button>
+            )}
+          </CardFooter>
+        </Card>
+      </div>
+    </AppLayout>
+  );
+}
