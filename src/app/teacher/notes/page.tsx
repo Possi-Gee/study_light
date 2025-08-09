@@ -11,8 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Note, Subject, getIconForSubject } from "@/lib/note-store";
 import { addSubject, deleteSubject, addNote, updateNote, deleteNote, getSubjects } from "@/services/notes-service";
-import { Eye, PlusCircle, Trash2, Edit, Loader2 } from "lucide-react";
+import { Eye, PlusCircle, Trash2, Edit, Loader2, BrainCircuit } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
+import { GenerateNoteDialog } from "@/components/generate-note-dialog";
 
 export default function TeacherNotesPage() {
     const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -22,6 +23,7 @@ export default function TeacherNotesPage() {
     const [isSubjectDialogOpen, setIsSubjectDialogOpen] = useState(false);
     const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
     const [isViewNoteDialogOpen, setIsViewNoteDialogOpen] = useState(false);
+    const [isAiNoteDialogOpen, setIsAiNoteDialogOpen] = useState(false);
 
     const [editingNote, setEditingNote] = useState<Note | null>(null);
     const [viewingNote, setViewingNote] = useState<Note | null>(null);
@@ -77,6 +79,11 @@ export default function TeacherNotesPage() {
         setEditingNote(note);
         setIsNoteDialogOpen(true);
     }
+    
+    const openAiNoteDialog = (subjectId: string) => {
+        setActiveSubjectId(subjectId);
+        setIsAiNoteDialogOpen(true);
+    }
 
     const openViewNoteDialog = (note: Note) => {
         setViewingNote(note);
@@ -119,6 +126,11 @@ export default function TeacherNotesPage() {
                 toast({ variant: "destructive", title: "Error", description: "Could not delete note." });
             }
        }
+    }
+    
+     const handleNoteGenerated = () => {
+        fetchSubjects(); // Re-fetch subjects and notes
+        toast({ title: "Success", description: "AI-generated note has been added." });
     }
 
     return (
@@ -180,6 +192,19 @@ export default function TeacherNotesPage() {
                                                     <Button variant="outline" size="sm" onClick={() => openNoteDialog(subject.id)}>
                                                         <PlusCircle className="mr-2 h-4 w-4"/> Add Note
                                                     </Button>
+                                                    <GenerateNoteDialog
+                                                        open={isAiNoteDialogOpen && activeSubjectId === subject.id}
+                                                        onOpenChange={(isOpen) => {
+                                                            if (!isOpen) setActiveSubjectId(null);
+                                                            setIsAiNoteDialogOpen(isOpen);
+                                                        }}
+                                                        subjectId={subject.id}
+                                                        onNoteGenerated={handleNoteGenerated}
+                                                    >
+                                                        <Button variant="outline" size="sm" onClick={() => openAiNoteDialog(subject.id)}>
+                                                            <BrainCircuit className="mr-2 h-4 w-4"/> Generate Note
+                                                        </Button>
+                                                    </GenerateNoteDialog>
                                                      <Button variant="destructive" size="sm" onClick={() => handleDeleteSubject(subject.id)}>
                                                         <Trash2 className="mr-2 h-4 w-4"/> Delete Subject
                                                     </Button>
@@ -270,4 +295,3 @@ export default function TeacherNotesPage() {
         </AppLayout>
     );
 }
-
