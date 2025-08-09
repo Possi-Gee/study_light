@@ -10,15 +10,19 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle, Loader2, RefreshCw, XCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Quiz } from '@/lib/quiz-store';
-import { getQuizById } from '@/services/quizzes-service';
+import { getQuizById, addQuizSubmission } from '@/services/quizzes-service';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 
 type AnswersState = { [key: number]: string };
 
 export default function QuizTakingPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const quizId = params.quizId as string;
   
   const [quizData, setQuizData] = useState<Quiz | null>(null);
@@ -27,6 +31,8 @@ export default function QuizTakingPage() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<AnswersState>({});
   const [showResults, setShowResults] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   useEffect(() => {
     async function fetchQuiz() {
@@ -44,6 +50,41 @@ export default function QuizTakingPage() {
     }
     fetchQuiz();
   }, [quizId]);
+
+  const score = Object.keys(answers).reduce((acc, key) => {
+    const qIndex = parseInt(key, 10);
+    if (answers[qIndex] === quizData?.questions[qIndex].correctAnswer) {
+      return acc + 1;
+    }
+    return acc;
+  }, 0);
+
+  const handleFinishQuiz = async () => {
+    if (!user || !quizData) return;
+    setIsSubmitting(true);
+
+    try {
+      await addQuizSubmission({
+        studentId: user.uid,
+        studentName: user.displayName || 'Anonymous',
+        quizId: quizData.id,
+        quizTitle: quizData.title,
+        score: score,
+        totalQuestions: quizData.questions.length,
+      });
+      setShowResults(true);
+    } catch (error) {
+       console.error("Failed to submit quiz results:", error);
+       toast({
+         variant: "destructive",
+         title: "Submission Failed",
+         description: "Your results could not be saved. Please try again.",
+       });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
 
   if (loading) {
     return (
@@ -75,14 +116,6 @@ export default function QuizTakingPage() {
   const handleAnswerSelect = (value: string) => {
     setAnswers((prev) => ({ ...prev, [currentQuestion]: value }));
   };
-
-  const score = Object.keys(answers).reduce((acc, key) => {
-    const qIndex = parseInt(key, 10);
-    if (answers[qIndex] === quizData.questions[qIndex].correctAnswer) {
-      return acc + 1;
-    }
-    return acc;
-  }, 0);
 
   const restartQuiz = () => {
     setCurrentQuestion(0);
@@ -165,7 +198,10 @@ export default function QuizTakingPage() {
                 Next <ArrowRight className="ml-2 h-4 w-4"/>
               </Button>
             ) : (
-              <Button onClick={() => setShowResults(true)} disabled={Object.keys(answers).length !== quizData.questions.length}>Finish Quiz</Button>
+              <Button onClick={handleFinishQuiz} disabled={Object.keys(answers).length !== quizData.questions.length || isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                Finish Quiz
+              </Button>
             )}
           </CardFooter>
         </Card>

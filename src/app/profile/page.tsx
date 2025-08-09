@@ -9,19 +9,14 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
-import { LogOut, Mail, User, Shield, Upload } from "lucide-react";
+import { LogOut, Mail, User, Shield, Upload, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-
-const quizHistory = [
-  { quiz: "General Knowledge Quiz", score: "3/4", date: "2024-07-21" },
-  { quiz: "Algebra Basics", score: "8/10", date: "2024-07-20" },
-  { quiz: "Intro to Calculus", score: "5/10", date: "2024-07-18" },
-  { quiz: "The Roman Empire", score: "9/10", date: "2024-07-15" },
-];
+import { getSubmissionsForStudent, QuizSubmission } from "@/services/quizzes-service";
+import { format } from "date-fns";
 
 export default function ProfilePage() {
     const { user } = useAuth();
@@ -30,6 +25,30 @@ export default function ProfilePage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState(user?.photoURL || "https://placehold.co/100x100.png");
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [quizHistory, setQuizHistory] = useState<QuizSubmission[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(true);
+
+    useEffect(() => {
+        if (user) {
+            const fetchHistory = async () => {
+                try {
+                    const submissions = await getSubmissionsForStudent(user.uid);
+                    setQuizHistory(submissions);
+                } catch (error) {
+                    console.error("Failed to fetch quiz history", error);
+                    toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: "Could not load your quiz history.",
+                    });
+                } finally {
+                    setLoadingHistory(false);
+                }
+            };
+            fetchHistory();
+        }
+    }, [user, toast]);
+
 
     const handleLogout = async () => {
         try {
@@ -129,6 +148,11 @@ export default function ProfilePage() {
                             <CardDescription>A summary of your recent quiz performance.</CardDescription>
                         </CardHeader>
                         <CardContent>
+                            {loadingHistory ? (
+                                <div className="flex justify-center items-center h-48">
+                                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                </div>
+                            ) : (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -138,15 +162,24 @@ export default function ProfilePage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {quizHistory.map(item => (
-                                        <TableRow key={item.quiz}>
-                                            <TableCell className="font-medium">{item.quiz}</TableCell>
-                                            <TableCell>{item.score}</TableCell>
-                                            <TableCell>{item.date}</TableCell>
+                                    {quizHistory.length > 0 ? (
+                                        quizHistory.map(item => (
+                                            <TableRow key={item.id}>
+                                                <TableCell className="font-medium">{item.quizTitle}</TableCell>
+                                                <TableCell>{item.score}/{item.totalQuestions}</TableCell>
+                                                <TableCell>{format(item.completedAt.toDate(), 'PPp')}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="h-24 text-center">
+                                                You haven't taken any quizzes yet.
+                                            </TableCell>
                                         </TableRow>
-                                    ))}
+                                    )}
                                 </TableBody>
                             </Table>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

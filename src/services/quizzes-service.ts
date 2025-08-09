@@ -11,10 +11,13 @@ import {
     deleteDoc,
     serverTimestamp,
     orderBy,
-    query
+    query,
+    where,
+    Timestamp
 } from "firebase/firestore";
 
 const quizzesCollection = collection(db, 'quizzes');
+const submissionsCollection = collection(db, 'submissions');
 
 export async function getQuizzes(): Promise<Quiz[]> {
     const q = query(quizzesCollection, orderBy("createdAt", "desc"));
@@ -53,4 +56,38 @@ export async function updateQuiz(id: string, quizData: Partial<Omit<Quiz, 'id'>>
 export async function deleteQuiz(id: string): Promise<void> {
     const quizDoc = doc(db, 'quizzes', id);
     await deleteDoc(quizDoc);
+}
+
+
+// === Quiz Submission Operations ===
+
+export type QuizSubmission = {
+    id: string;
+    studentId: string;
+    studentName: string;
+    quizId: string;
+    quizTitle: string;
+    score: number;
+    totalQuestions: number;
+    completedAt: Timestamp;
+};
+
+export async function addQuizSubmission(submissionData: Omit<QuizSubmission, 'id' | 'completedAt'>) {
+    await addDoc(submissionsCollection, {
+        ...submissionData,
+        completedAt: serverTimestamp()
+    });
+}
+
+export async function getSubmissionsForStudent(studentId: string): Promise<QuizSubmission[]> {
+    const q = query(
+        submissionsCollection,
+        where("studentId", "==", studentId),
+        orderBy("completedAt", "desc")
+    );
+    const submissionSnapshot = await getDocs(q);
+    return submissionSnapshot.docs.map(doc => ({
+        ...(doc.data() as Omit<QuizSubmission, 'id'>),
+        id: doc.id
+    }));
 }
