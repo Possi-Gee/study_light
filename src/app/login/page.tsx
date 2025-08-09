@@ -11,26 +11,56 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [role, setRole] = useState('student');
 
-  const handleLogin = (e: React.FormEvent) => {
+   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // This is a simplified login. In a real app, you'd check credentials
-    // and role, then redirect. For now, we'll assume a student logs in.
-    // Teacher login can be handled differently, e.g. a separate portal or logic.
-    const email = (e.currentTarget.elements.namedItem('email') as HTMLInputElement).value;
+    setIsLoading(true);
 
-    if (email.toLowerCase().includes('teacher')) {
-        router.push('/teacher/dashboard');
-    } else {
-        router.push('/');
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
+
+      // NOTE: In a real-world scenario, role management would be more robust.
+      // We would check custom claims or a Firestore document to determine the user's role.
+      // For this prototype, we'll keep the client-side role selection.
+      if (role === 'teacher') {
+          router.push('/teacher/dashboard');
+      } else {
+          router.push('/');
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "Invalid email or password.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -50,6 +80,7 @@ export default function LoginPage() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="m@example.com"
                 required
@@ -62,9 +93,21 @@ export default function LoginPage() {
                   Forgot your password?
                 </Link>
               </div>
-              <Input id="password" type="password" required />
+              <Input id="password" name="password" type="password" required />
             </div>
-            <Button type="submit" className="w-full">
+             <div className="grid gap-2">
+                <Label>Role</Label>
+                <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                >
+                    <option value="student">Student</option>
+                    <option value="teacher">Teacher</option>
+                </select>
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
               Login
             </Button>
           </form>

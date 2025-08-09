@@ -11,22 +11,58 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { GraduationCap } from "lucide-react"
+import { GraduationCap, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
 export default function RegisterPage() {
   const [role, setRole] = useState('student');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (role === 'student') {
-      router.push('/');
-    } else {
-      router.push('/teacher/dashboard');
+    setIsLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const fullName = formData.get('full-name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      await updateProfile(user, { displayName: fullName });
+
+      // In a real app, you'd likely save the role to Firestore or a custom claim.
+      // For now, we'll rely on client-side logic after login.
+
+      toast({
+        title: "Account Created!",
+        description: "You have been successfully registered.",
+      });
+
+      if (role === 'student') {
+        router.push('/');
+      } else {
+        router.push('/teacher/dashboard');
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: error.message || "An unknown error occurred.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -46,12 +82,13 @@ export default function RegisterPage() {
             <form className="grid gap-4" onSubmit={handleRegister}>
                 <div className="grid gap-2">
                     <Label htmlFor="full-name">Full name</Label>
-                    <Input id="full-name" placeholder="John Doe" required />
+                    <Input id="full-name" name="full-name" placeholder="John Doe" required />
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="m@example.com"
                     required
@@ -59,7 +96,7 @@ export default function RegisterPage() {
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="password">Password</Label>
-                    <Input id="password" type="password" required/>
+                    <Input id="password" name="password" type="password" required/>
                 </div>
                 <div className="grid gap-2">
                     <Label>Role</Label>
@@ -74,7 +111,8 @@ export default function RegisterPage() {
                         </Label>
                     </RadioGroup>
                 </div>
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                     Create an account
                 </Button>
             </form>

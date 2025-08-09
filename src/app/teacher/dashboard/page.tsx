@@ -1,17 +1,20 @@
 
+'use client';
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookMarked, PlusCircle, Presentation, RefreshCw, Users, HelpCircle } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { BookMarked, PlusCircle, RefreshCw, HelpCircle, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function TeacherDashboardPage() {
+    const { user } = useAuth();
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
         <div className="flex justify-between items-center">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Welcome, Possi Gee!</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Welcome, {user?.displayName || 'Teacher'}!</h1>
             </div>
             <Button variant="outline">
                 <RefreshCw className="mr-2"/>
@@ -29,7 +32,7 @@ export default function TeacherDashboardPage() {
                     <CardDescription>Create, edit, and assign notes to your subjects.</CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
-                    <Link href="#" className="w-full">
+                    <Link href="/teacher/notes" className="w-full">
                         <Button className="w-full">
                             Manage Notes
                         </Button>
@@ -46,7 +49,7 @@ export default function TeacherDashboardPage() {
                     <CardDescription>Create new quizzes and view student results.</CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
-                    <Link href="#" className="w-full">
+                    <Link href="/teacher/quizzes" className="w-full">
                         <Button className="w-full">
                             Manage Quizzes
                         </Button>
@@ -63,7 +66,7 @@ export default function TeacherDashboardPage() {
                     <CardDescription>View student progress and quiz history.</CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
-                    <Link href="#" className="w-full">
+                    <Link href="/teacher/students" className="w-full">
                         <Button className="w-full">
                            View Students
                         </Button>

@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   BookOpen,
@@ -40,6 +40,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/use-auth";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import { useToast } from "@/hooks/use-toast";
 
 const studentNavItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -50,19 +54,33 @@ const studentNavItems = [
 
 const teacherNavItems = [
     { href: "/teacher/dashboard", label: "Dashboard", icon: Home },
-    { href: "#", label: "Manage Notes", icon: BookMarked },
-    { href: "#", label: "Manage Quizzes", icon: HelpCircle },
-    { href: "#", label: "Students", icon: Users },
+    { href: "/teacher/notes", label: "Manage Notes", icon: BookMarked },
+    { href: "/teacher/quizzes", label: "Manage Quizzes", icon: HelpCircle },
+    { href: "/teacher/students", label: "Students", icon: Users },
 ]
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isTeacher = pathname.startsWith('/teacher');
+  const { user } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+        await signOut(auth);
+        toast({ title: "Logged out successfully." });
+        router.push('/login');
+    } catch (error) {
+        toast({ variant: "destructive", title: "Logout failed." });
+    }
+  }
 
   const navItems = isTeacher ? teacherNavItems : studentNavItems;
 
   const userRole = isTeacher ? 'Teacher' : 'Student';
-  const userEmail = isTeacher ? 'teacher@example.com' : 'student@example.com';
+  const userName = user?.displayName || userRole;
+  const userEmail = user?.email || '';
   const profileUrl = isTeacher ? '#' : '/profile';
 
 
@@ -72,7 +90,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <SidebarHeader>
             <div className="flex items-center gap-2">
                 <GraduationCap className="text-primary w-8 h-8"/>
-                <h1 className="text-2xl font-bold text-primary font-headline">StudyLight</h1>
+                <h1 className="text-2xl font-bold text-primary font-headline">SmartStudy Lite</h1>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -99,18 +117,16 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <span>Profile</span>
             </SidebarMenuButton>
           </Link>
-           <Link href="/login" passHref>
-            <SidebarMenuButton tooltip="Logout">
+           <SidebarMenuButton tooltip="Logout" onClick={handleLogout}>
               <LogOut />
               <span>Logout</span>
             </SidebarMenuButton>
-          </Link>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
         <header className="flex h-14 items-center justify-between border-b bg-background px-4 sm:justify-end">
           <SidebarTrigger className="sm:hidden" />
-          <UserNav name={userRole} email={userEmail} profileUrl={profileUrl} />
+          <UserNav name={userName} email={userEmail} profileUrl={profileUrl} onLogout={handleLogout} />
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
             {children}
@@ -120,7 +136,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   );
 }
 
-function UserNav({name, email, profileUrl}: {name: string, email: string, profileUrl: string}) {
+function UserNav({name, email, profileUrl, onLogout}: {name: string, email: string, profileUrl: string, onLogout: () => void}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -152,11 +168,9 @@ function UserNav({name, email, profileUrl}: {name: string, email: string, profil
           <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/login">
+        <DropdownMenuItem onClick={onLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
-          </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

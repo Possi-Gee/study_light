@@ -1,15 +1,20 @@
+
+'use client';
+
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
 import { ArrowRight, BookOpen, CalendarCheck, Puzzle } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
         <div>
-            <h1 className="text-3xl font-bold tracking-tight">Welcome back, Student!</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.displayName || 'Student'}!</h1>
             <p className="text-muted-foreground">Ready to ace your exams? Here's what you can do.</p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
