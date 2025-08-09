@@ -6,9 +6,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { FileQuestion, PlusCircle, Trash2, Edit, BarChart } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 type QuizQuestion = {
@@ -124,14 +124,16 @@ export default function TeacherQuizzesPage() {
                              <CardContent className="flex-grow">
                                 <p className="text-sm text-muted-foreground line-clamp-3">{quiz.description}</p>
                             </CardContent>
-                            <CardFooter className="flex justify-between">
+                            <CardFooter className="flex justify-between items-center">
                                 <div className="flex gap-2">
                                     <Button variant="outline" size="sm" onClick={() => openQuizDialog(quiz)}>
                                         <Edit className="mr-2 h-4 w-4"/> Edit
                                     </Button>
-                                    <Button variant="outline" size="sm">
-                                        <BarChart className="mr-2 h-4 w-4"/> Results
-                                    </Button>
+                                    <Link href={`/teacher/quizzes/${quiz.id}/results`}>
+                                        <Button variant="outline" size="sm">
+                                            <BarChart className="mr-2 h-4 w-4"/> Results
+                                        </Button>
+                                    </Link>
                                 </div>
                                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-9 w-9" onClick={() => handleDeleteQuiz(quiz.id)}>
                                     <Trash2 className="h-4 w-4"/>
