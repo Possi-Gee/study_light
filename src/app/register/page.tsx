@@ -34,6 +34,17 @@ export default function RegisterPage() {
     const fullName = formData.get('full-name') as string;
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirm-password') as string;
+
+    if (password !== confirmPassword) {
+        toast({
+            variant: "destructive",
+            title: "Registration Failed",
+            description: "Passwords do not match.",
+        });
+        setIsLoading(false);
+        return;
+    }
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -96,7 +107,11 @@ export default function RegisterPage() {
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="password">Password</Label>
-                    <Input id="password" name="password" type="password" required/>
+                    <Input id="password" name="password" type="password" required placeholder="••••••••" />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <Input id="confirm-password" name="confirm-password" type="password" required placeholder="••••••••" />
                 </div>
                 <div className="grid gap-2">
                     <Label>Role</Label>
