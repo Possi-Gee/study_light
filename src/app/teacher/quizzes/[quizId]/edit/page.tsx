@@ -222,6 +222,7 @@ export default function EditQuizPage() {
                                 <Button type="button" variant="outline" onClick={addQuestion}>
                                     <PlusCircle className="mr-2"/> Add Question Manually
                                 </Button>
+
                                 <Button type="button">
                                     <BrainCircuit className="mr-2"/> Generate Questions with AI
                                 </Button>
