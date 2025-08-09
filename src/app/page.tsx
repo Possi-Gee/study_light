@@ -44,7 +44,7 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
                     <Link href="/notes" className="w-full">
-                        <Button variant="secondary" className="w-full">
+                        <Button className="w-full">
                             Browse Notes <ArrowRight className="ml-2"/>
                         </Button>
                     </Link>
@@ -60,7 +60,7 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
                     <Link href="/quizzes" className="w-full">
-                        <Button variant="secondary" className="w-full">
+                        <Button className="w-full">
                             Take a Quiz <ArrowRight className="ml-2"/>
                         </Button>
                     </Link>
