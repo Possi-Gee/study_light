@@ -1,41 +1,44 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Subjects can be read by any authenticated user
+
+    // Subjects can be read by any authenticated user.
+    // Only teachers can create, update, or delete subjects and their notes.
     match /subjects/{subjectId} {
       allow read: if request.auth != null;
-      // Write access is limited to teachers
       allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
       
-      // Notes can be read by any authenticated user
       match /notes/{noteId} {
-         allow read: if request.auth != null;
-         // Write access is limited to teachers
-         allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
       }
     }
 
-    // Quizzes can be read by any authenticated user
+    // Quizzes can be read by any authenticated user.
+    // Only teachers can create, update, or delete quizzes.
     match /quizzes/{quizId} {
-       allow read: if request.auth != null;
-       // Write access is limited to teachers
-       allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
     }
 
-    // Users can read/write their own profile. Teachers can read any user's profile.
+    // Users can be created by anyone (for registration).
+    // Users can only read/update their own profile.
+    // Teachers can read any user's profile.
     match /users/{userId} {
-      allow write: if request.auth != null && request.auth.uid == userId;
-      allow read: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher');
+      allow create: if request.auth != null;
+      allow read, update: if request.auth.uid == userId 
+                         || (request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher');
     }
 
-    // Submissions can be created by any authenticated user
-    // Users can only read their own submissions, but teachers can read all submissions.
+    // Students can create submissions for themselves.
+    // Students can read their own submissions.
+    // Teachers can read any submission.
     match /submissions/{submissionId} {
-      allow create: if request.auth != null;
-      allow read: if request.auth != null && (request.resource.data.studentId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher');
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.studentId;
+      allow read: if (request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher')
+                   || (request.auth != null && request.auth.uid == resource.data.studentId);
+      allow write: if false; // Submissions are immutable
     }
   }
 }
