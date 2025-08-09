@@ -175,7 +175,7 @@ export default function EditQuizPage() {
                                         <Label htmlFor={`question-${q.id}`}>Question {index + 1}</Label>
                                         <Textarea id={`question-${q.id}`} value={q.text} onChange={e => handleQuestionChange(q.id, 'text', e.target.value)} placeholder="What is 2 + 2?" />
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 gap-4">
                                         {[0, 1, 2, 3].map(i => (
                                              <div key={i} className="space-y-2">
                                                 <Label htmlFor={`q-${q.id}-option-${i}`}>Option {i + 1}</Label>
