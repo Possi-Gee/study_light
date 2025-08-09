@@ -20,6 +20,7 @@ export default function RootLayout({
     <html lang="en" className="dark h-full">
       <head>
         <meta name="theme-color" content="#facc15" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-body antialiased flex flex-col h-full">
         <AuthProvider>
