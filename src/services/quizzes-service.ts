@@ -31,7 +31,8 @@ export async function getQuizzes(): Promise<Quiz[]> {
 }
 
 export async function getQuizzesCount(): Promise<number> {
-    const snapshot = await getCountFromServer(quizzesCollection);
+    const q = query(collection(db, 'quizzes'));
+    const snapshot = await getCountFromServer(q);
     return snapshot.data().count;
 }
 
