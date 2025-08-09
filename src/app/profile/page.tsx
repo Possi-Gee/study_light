@@ -95,8 +95,8 @@ export default function ProfilePage() {
                     <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
                     <p className="text-muted-foreground">Manage your account information and view your progress.</p>
                 </div>
-                <div className="grid gap-8 md:grid-cols-3">
-                    <Card className="md:col-span-1">
+                <div className="grid gap-8 lg:grid-cols-3">
+                    <Card className="lg:col-span-1">
                         <CardHeader className="items-center text-center">
                             <Avatar className="h-24 w-24 mb-4">
                                 <AvatarImage src={user?.photoURL || undefined} alt="@student"/>
@@ -160,7 +160,7 @@ export default function ProfilePage() {
                             </Button>
                         </CardContent>
                     </Card>
-                    <Card className="md:col-span-2">
+                    <Card className="lg:col-span-2">
                         <CardHeader>
                             <CardTitle>Quiz History</CardTitle>
                             <CardDescription>A summary of your recent quiz performance.</CardDescription>

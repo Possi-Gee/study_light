@@ -147,7 +147,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           <SidebarTrigger className="sm:hidden" />
           <UserNav name={userName} email={userEmail} profileUrl={profileUrl} settingsUrl={settingsUrl} onLogout={handleLogout} />
         </header>
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
             {children}
         </main>
       </SidebarInset>

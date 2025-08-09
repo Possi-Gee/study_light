@@ -54,12 +54,12 @@ export default function TeacherDashboardPage() {
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Welcome, {user?.displayName || 'Teacher'}!</h1>
                 <p className="text-muted-foreground">Here's a summary of your teaching activity.</p>
             </div>
-            <Button variant="outline" onClick={handleRefresh} disabled={loading}>
+            <Button variant="outline" onClick={handleRefresh} disabled={loading} className="shrink-0">
                 <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}/>
                 Refresh Data
             </Button>
@@ -99,7 +99,7 @@ export default function TeacherDashboardPage() {
                     </Link>
                 </CardContent>
             </Card>
-            <Card className="flex flex-col lg:col-span-3">
+            <Card className="flex flex-col lg:col-span-1">
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardDescription>Student Overview</CardDescription>

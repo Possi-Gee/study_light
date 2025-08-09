@@ -15,7 +15,7 @@ export default function TeacherProfilePage() {
     
     return (
         <AppLayout>
-            <div className="flex justify-center items-start pt-8">
+            <div className="flex justify-center items-start pt-0 md:pt-8">
                  <Card className="w-full max-w-md">
                     <CardHeader className="items-center text-center">
                         <Avatar className="h-24 w-24 mb-4">
