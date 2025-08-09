@@ -94,7 +94,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const userName = user?.displayName || userRoleDisplay;
   const userEmail = user?.email || '';
 
-  const profileUrl = isTeacher ? '/teacher/dashboard' : '/profile'; // Teachers don't have a separate profile page for now
+  const profileUrl = isTeacher ? '/teacher/dashboard' : '/profile';
   const settingsUrl = isTeacher ? '/teacher/settings' : '/settings';
 
   return (
@@ -125,7 +125,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </SidebarContent>
         <SidebarFooter>
            <Link href={profileUrl} passHref>
-            <SidebarMenuButton isActive={pathname === profileUrl || (isTeacher && pathname.startsWith('/teacher/dashboard'))} tooltip="Profile">
+            <SidebarMenuButton isActive={pathname === profileUrl} tooltip="Profile">
               <User />
               <span>Profile</span>
             </SidebarMenuButton>
@@ -156,6 +156,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
 }
 
 function UserNav({name, email, profileUrl, settingsUrl, onLogout}: {name: string, email: string, profileUrl: string, settingsUrl: string, onLogout: () => void}) {
+  const isTeacher = useRole().role === 'teacher';
+  const actualProfileUrl = isTeacher ? '/teacher/dashboard' : '/profile';
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -177,7 +180,7 @@ function UserNav({name, email, profileUrl, settingsUrl, onLogout}: {name: string
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href={profileUrl}>
+          <Link href={actualProfileUrl}>
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
           </Link>
