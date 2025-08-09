@@ -8,8 +8,17 @@ export async function updateUserProfile(
   user: User,
   updates: { displayName?: string; photoURL?: string }
 ) {
-  await updateProfile(user, updates);
-  // After updating, refresh the user state in our store
+  if (!auth.currentUser) {
+    throw new Error("User not authenticated");
+  }
+
+  await updateProfile(auth.currentUser, updates);
+  
+  // After updating, we need to get the fresh user object from Firebase
+  // as the one we have might be stale.
+  await auth.currentUser.reload();
+  
+  // Now set the latest user object in our store, which will trigger UI updates
   useAuthStore.getState().setUser(auth.currentUser);
 }
 
