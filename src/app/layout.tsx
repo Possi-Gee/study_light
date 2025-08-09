@@ -8,6 +8,7 @@ import { Footer } from '@/components/footer';
 export const metadata: Metadata = {
   title: 'StudyLight',
   description: 'AI-powered study assistant by StudyLight',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -17,7 +18,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark h-full">
-      <head/>
+      <head>
+        <meta name="theme-color" content="#facc15" />
+      </head>
       <body className="font-body antialiased flex flex-col h-full">
         <AuthProvider>
             <div className="flex flex-col min-h-screen">
