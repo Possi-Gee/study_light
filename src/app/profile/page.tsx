@@ -17,13 +17,13 @@ import { format } from "date-fns";
 import { uploadAvatar, updateUserProfile } from "@/services/user-service";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { useAuthStore } from "@/hooks/use-auth-store";
 
 export default function ProfilePage() {
-    const { user } = useAuth();
+    const { user, isUpdating } = useAuthStore();
     const router = useRouter();
     const { toast } = useToast();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [quizHistory, setQuizHistory] = useState<QuizSubmission[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
@@ -63,17 +63,14 @@ export default function ProfilePage() {
     const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file && user) {
-            setIsUploading(true);
             try {
                 const photoURL = await uploadAvatar(user.uid, file);
                 await updateUserProfile(user, { photoURL });
                 toast({ title: "Success", description: "Profile picture updated!" });
-                setIsDialogOpen(false);
+                setIsDialogOpen(false); // Close dialog on success
             } catch (error) {
                 console.error("Failed to upload avatar", error);
                 toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload your new picture." });
-            } finally {
-                setIsUploading(false);
             }
         }
     };
@@ -128,19 +125,19 @@ export default function ProfilePage() {
                                             className="hidden"
                                             ref={fileInputRef}
                                             onChange={handleAvatarUpload}
-                                            disabled={isUploading}
+                                            disabled={isUpdating}
                                         />
-                                        <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                                            {isUploading ? (
+                                        <Button onClick={() => fileInputRef.current?.click()} disabled={isUpdating}>
+                                            {isUpdating ? (
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
                                             ) : (
                                                 <Upload className="mr-2 h-4 w-4"/>
                                             )}
-                                            {isUploading ? 'Uploading...' : 'Upload Picture'}
+                                            {isUpdating ? 'Uploading...' : 'Upload Picture'}
                                         </Button>
                                     </div>
                                     <DialogFooter>
-                                        <Button variant="ghost" onClick={() => setIsDialogOpen(false)} disabled={isUploading}>Cancel</Button>
+                                        <Button variant="ghost" onClick={() => setIsDialogOpen(false)} disabled={isUpdating}>Cancel</Button>
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>

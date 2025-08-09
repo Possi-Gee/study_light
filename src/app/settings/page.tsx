@@ -12,15 +12,14 @@ import { useAuth } from "@/hooks/use-auth";
 import { useState, useRef, useEffect } from "react";
 import { Loader2, Upload } from "lucide-react";
 import { updateUserProfile, uploadAvatar } from "@/services/user-service";
+import { useAuthStore } from "@/hooks/use-auth-store";
 
 export default function SettingsPage() {
-    const { user } = useAuth();
+    const { user, isUpdating } = useAuthStore();
     const { toast } = useToast();
 
     const [displayName, setDisplayName] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -31,7 +30,6 @@ export default function SettingsPage() {
     const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file && user) {
-            setIsUploading(true);
             try {
                 const photoURL = await uploadAvatar(user.uid, file);
                 await updateUserProfile(user, { photoURL });
@@ -39,8 +37,6 @@ export default function SettingsPage() {
             } catch (error) {
                 console.error("Failed to upload avatar", error);
                 toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload your new picture." });
-            } finally {
-                setIsUploading(false);
             }
         }
     };
@@ -52,8 +48,6 @@ export default function SettingsPage() {
             toast({ variant: "destructive", title: "Error", description: "You must be logged in to save changes." });
             return;
         }
-
-        setIsSaving(true);
         
         try {
             if (displayName !== user.displayName) {
@@ -65,8 +59,6 @@ export default function SettingsPage() {
         } catch (error: any) {
             console.error("Failed to save settings:", error);
             toast({ variant: "destructive", title: "Error", description: error.message || "Could not save your changes." });
-        } finally {
-            setIsSaving(false);
         }
     }
 
@@ -95,11 +87,11 @@ export default function SettingsPage() {
                                     className="hidden"
                                     ref={fileInputRef}
                                     onChange={handleAvatarUpload}
-                                    disabled={isUploading}
+                                    disabled={isUpdating}
                                 />
-                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Upload className="mr-2 h-4 w-4"/>}
-                                    {isUploading ? "Uploading..." : "Change Photo"}
+                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUpdating}>
+                                    {isUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Upload className="mr-2 h-4 w-4"/>}
+                                    {isUpdating ? "Uploading..." : "Change Photo"}
                                 </Button>
                             </div>
                             <div className="space-y-2">
@@ -135,8 +127,8 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
                     <div className="flex justify-end">
-                        <Button type="submit" disabled={isSaving}>
-                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        <Button type="submit" disabled={isUpdating}>
+                            {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Save Changes
                         </Button>
                     </div>
