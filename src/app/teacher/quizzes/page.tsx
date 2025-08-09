@@ -124,13 +124,15 @@ export default function TeacherQuizzesPage() {
                              <CardContent className="flex-grow">
                                 <p className="text-sm text-muted-foreground line-clamp-3">{quiz.description}</p>
                             </CardContent>
-                            <CardFooter className="flex gap-2">
-                                <Button variant="outline" size="sm" onClick={() => openQuizDialog(quiz)} className="flex-1">
-                                    <Edit className="mr-2 h-4 w-4"/> Edit
-                                </Button>
-                                <Button variant="outline" size="sm" className="flex-1">
-                                    <BarChart className="mr-2 h-4 w-4"/> Results
-                                </Button>
+                            <CardFooter className="flex justify-between items-center">
+                                <div className="flex gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => openQuizDialog(quiz)}>
+                                        <Edit className="mr-2 h-4 w-4"/> Edit
+                                    </Button>
+                                    <Button variant="outline" size="sm">
+                                        <BarChart className="mr-2 h-4 w-4"/> Results
+                                    </Button>
+                                </div>
                                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive shrink-0 h-9 w-9" onClick={() => handleDeleteQuiz(quiz.id)}>
                                     <Trash2 className="h-4 w-4"/>
                                 </Button>
