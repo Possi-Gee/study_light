@@ -16,6 +16,7 @@ import {
   Users,
   BookMarked,
   HelpCircle,
+  Loader2,
 } from "lucide-react";
 
 import {
@@ -45,6 +46,7 @@ import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { getInitials } from "@/lib/utils";
+import { useRole } from "@/hooks/use-role";
 
 const studentNavItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -62,8 +64,8 @@ const teacherNavItems = [
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isTeacher = pathname.startsWith('/teacher');
   const { user } = useAuth();
+  const { role, isLoading: isRoleLoading } = useRole();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -77,14 +79,23 @@ export function AppLayout({ children }: { children: ReactNode }) {
     }
   }
 
+  if (isRoleLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const isTeacher = role === 'teacher';
   const navItems = isTeacher ? teacherNavItems : studentNavItems;
-
-  const userRole = isTeacher ? 'Teacher' : 'Student';
-  const userName = user?.displayName || userRole;
+  
+  const userRoleDisplay = isTeacher ? 'Teacher' : 'Student';
+  const userName = user?.displayName || userRoleDisplay;
   const userEmail = user?.email || '';
-  const profileUrl = isTeacher ? '#' : '/profile';
-  const settingsUrl = '/settings';
 
+  const profileUrl = isTeacher ? '/teacher/dashboard' : '/profile'; // Teachers don't have a separate profile page for now
+  const settingsUrl = isTeacher ? '/teacher/settings' : '/settings';
 
   return (
     <SidebarProvider>
@@ -113,10 +124,16 @@ export function AppLayout({ children }: { children: ReactNode }) {
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-          <Link href={profileUrl} passHref>
-            <SidebarMenuButton isActive={pathname === profileUrl} tooltip="Profile">
+           <Link href={profileUrl} passHref>
+            <SidebarMenuButton isActive={pathname === profileUrl || (isTeacher && pathname.startsWith('/teacher/dashboard'))} tooltip="Profile">
               <User />
               <span>Profile</span>
+            </SidebarMenuButton>
+          </Link>
+          <Link href={settingsUrl} passHref>
+            <SidebarMenuButton isActive={pathname === settingsUrl} tooltip="Settings">
+              <Settings />
+              <span>Settings</span>
             </SidebarMenuButton>
           </Link>
            <SidebarMenuButton tooltip="Logout" onClick={handleLogout}>
