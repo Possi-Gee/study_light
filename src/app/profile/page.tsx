@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { getSubmissionsForStudent, QuizSubmission } from "@/services/quizzes-service";
 import { format } from "date-fns";
-import { uploadAvatarAndUpdateProfile } from "@/services/user-service";
+import { uploadAvatarAndUpdateProfile, getUserById, UserProfile } from "@/services/user-service";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuthStore } from "@/hooks/use-auth-store";
@@ -27,6 +27,7 @@ export default function ProfilePage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [quizHistory, setQuizHistory] = useState<QuizSubmission[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
     useEffect(() => {
         if (user) {
@@ -45,7 +46,18 @@ export default function ProfilePage() {
                     setLoadingHistory(false);
                 }
             };
+
+            const fetchUserProfile = async () => {
+                try {
+                    const profile = await getUserById(user.uid);
+                    setUserProfile(profile);
+                } catch (error) {
+                    console.error("Failed to fetch user profile", error);
+                }
+            }
+
             fetchHistory();
+            fetchUserProfile();
         }
     }, [user, toast]);
 
@@ -73,6 +85,8 @@ export default function ProfilePage() {
             }
         }
     };
+    
+    const roleDisplay = userProfile?.role ? userProfile.role.charAt(0).toUpperCase() + userProfile.role.slice(1) : '...';
 
     return (
         <AppLayout>
@@ -102,7 +116,7 @@ export default function ProfilePage() {
                             </div>
                              <div className="flex items-center">
                                 <Shield className="mr-2 h-4 w-4 text-muted-foreground"/>
-                                <span>Role: Student</span>
+                                <span>Role: {roleDisplay}</span>
                             </div>
                              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                                 <DialogTrigger asChild>
