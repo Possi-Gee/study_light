@@ -97,3 +97,16 @@ export async function getSubmissionsForStudent(studentId: string): Promise<QuizS
         id: doc.id
     }));
 }
+
+export async function getSubmissionsForQuiz(quizId: string): Promise<QuizSubmission[]> {
+    const q = query(
+        submissionsCollection,
+        where("quizId", "==", quizId),
+        orderBy("completedAt", "desc")
+    );
+    const submissionSnapshot = await getDocs(q);
+    return submissionSnapshot.docs.map(doc => ({
+        ...(doc.data() as Omit<QuizSubmission, 'id'>),
+        id: doc.id
+    }));
+}

@@ -77,6 +77,9 @@ export default function QuizTakingPage() {
     }
     return acc;
   }, 0);
+  
+  const scorePercentage = quizData && quizData.questions.length > 0 ? Math.round((score / quizData.questions.length) * 100) : 0;
+
 
   const handleFinishQuiz = async () => {
     if (!user || !quizData) return;
@@ -170,10 +173,10 @@ export default function QuizTakingPage() {
   };
 
   if (showResults) {
-    const isPassing = quizData && score / quizData.questions.length >= 0.7; // 70% to pass
+    const isPassing = scorePercentage >= 70;
     return (
       <AppLayout>
-        <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto">
+        <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto p-4">
             {isPassing && <ReactConfetti width={width} height={height} recycle={false} numberOfPieces={500} />}
             
             {isPassing ? (
@@ -183,7 +186,7 @@ export default function QuizTakingPage() {
                         ref={certificateRef}
                         studentName={user?.displayName || 'Student'}
                         quizTitle={quizData.title}
-                        score={`${score}/${quizData.questions.length}`}
+                        score={`${scorePercentage}%`}
                         date={format(new Date(), 'MMMM dd, yyyy')}
                         />
                  </div>
@@ -194,7 +197,7 @@ export default function QuizTakingPage() {
             <Card className="w-full">
             <CardHeader>
                 <CardTitle>Quiz Results for "{quizData.title}"</CardTitle>
-                <CardDescription>You scored {score} out of {quizData.questions.length}!</CardDescription>
+                <CardDescription>You scored {scorePercentage}% ({score} out of {quizData.questions.length})!</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 {quizData.questions.map((q, index) => (
@@ -237,7 +240,7 @@ export default function QuizTakingPage() {
 
   return (
     <AppLayout>
-      <div className="w-full flex justify-center">
+      <div className="w-full flex justify-center p-4">
         <div className="w-full max-w-2xl space-y-6">
             <Link href="/quizzes" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
                 <ArrowLeft className="mr-2 h-4 w-4"/>

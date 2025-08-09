@@ -5,53 +5,42 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Quiz } from "@/lib/quiz-store";
-import { getQuizById } from "@/services/quizzes-service";
+import { Quiz, QuizSubmission, getQuizById, getSubmissionsForQuiz } from "@/services/quizzes-service";
 import { getInitials } from "@/lib/utils";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-
-// Mock data for demonstration purposes
-const quizTakers = {
-    "quiz-1": [
-        { studentId: "usr-1", name: "Possi Gee", avatar: "https://placehold.co/100x100.png", initials: "PG", score: "8/10", date: "2024-07-28" },
-        { studentId: "usr-2", name: "Olivia Smith", avatar: "https://placehold.co/100x100.png", initials: "OS", score: "10/10", date: "2024-07-28" },
-        { studentId: "usr-4", name: "Emma Brown", avatar: "https://placehold.co/100x100.png", initials: "EB", score: "6/10", date: "2024-07-27" },
-    ],
-    "quiz-2": [
-        { studentId: "usr-1", name: "Possi Gee", avatar: "https://placehold.co/100x100.png", initials: "PG", score: "9/10", date: "2024-07-26" },
-        { studentId: "usr-3", name: "Noah Williams", avatar: "https://placehold.co/100x100.png", initials: "NW", score: "7/10", date: "2024-07-26" },
-        { studentId: "usr-5", name: "Oliver Jones", avatar: "https://placehold.co/100x100.png", initials: "OJ", score: "8/10", date: "2024-07-25" },
-    ],
-};
+import { useEffect, useState, useCallback } from "react";
+import { format } from "date-fns";
 
 export default function QuizResultsPage() {
     const params = useParams();
     const quizId = params.quizId as string;
     
     const [quiz, setQuiz] = useState<Quiz | null>(null);
+    const [results, setResults] = useState<QuizSubmission[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchQuizData = useCallback(async () => {
         if (!quizId) return;
-        async function fetchQuiz() {
-            setLoading(true);
-            try {
-                const fetchedQuiz = await getQuizById(quizId);
-                setQuiz(fetchedQuiz);
-            } catch (error) {
-                console.error("Failed to fetch quiz:", error);
-            } finally {
-                setLoading(false);
-            }
+        setLoading(true);
+        try {
+            const [fetchedQuiz, fetchedResults] = await Promise.all([
+                getQuizById(quizId),
+                getSubmissionsForQuiz(quizId)
+            ]);
+            setQuiz(fetchedQuiz);
+            setResults(fetchedResults);
+        } catch (error) {
+            console.error("Failed to fetch quiz data:", error);
+        } finally {
+            setLoading(false);
         }
-        fetchQuiz();
     }, [quizId]);
 
-    // This part is still mocked, would require a 'submissions' collection in a real app
-    const results = quizId in quizTakers ? quizTakers[quizId as keyof typeof quizTakers] : [];
+    useEffect(() => {
+        fetchQuizData();
+    }, [fetchQuizData]);
 
     if (loading) {
         return (
@@ -106,27 +95,31 @@ export default function QuizResultsPage() {
                        <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="w-[80px]">Student</TableHead>
+                                    <TableHead>Student</TableHead>
                                     <TableHead>Score</TableHead>
                                     <TableHead>Date Completed</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {results.map(result => (
-                                    <TableRow key={result.studentId}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar>
-                                                    <AvatarImage src={result.avatar} alt={result.name} data-ai-hint="person portrait" />
-                                                    <AvatarFallback>{getInitials(result.name)}</AvatarFallback>
-                                                </Avatar>
-                                                <span className="font-medium">{result.name}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="font-semibold text-lg">{result.score}</TableCell>
-                                        <TableCell className="text-muted-foreground">{result.date}</TableCell>
-                                    </TableRow>
-                                ))}
+                                {results.map(result => {
+                                    const scorePercentage = result.totalQuestions > 0 ? Math.round((result.score / result.totalQuestions) * 100) : 0;
+                                    return (
+                                        <TableRow key={result.id}>
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar>
+                                                        {/* This assumes user profile has photoURL, which needs to be fetched */}
+                                                        {/* <AvatarImage src={result.studentAvatarUrl} alt={result.studentName} /> */}
+                                                        <AvatarFallback>{getInitials(result.studentName)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="font-medium">{result.studentName}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="font-semibold text-lg">{scorePercentage}%</TableCell>
+                                            <TableCell className="text-muted-foreground">{format(result.completedAt.toDate(), 'PPp')}</TableCell>
+                                        </TableRow>
+                                    )
+                                })}
                                  {results.length === 0 && (
                                     <TableRow>
                                         <TableCell colSpan={3} className="h-24 text-center">
