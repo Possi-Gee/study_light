@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useRef, useEffect } from "react";
 import { Loader2, Upload } from "lucide-react";
-import { updateUserProfile, uploadAvatar } from "@/services/user-service";
+import { updateUserProfile, uploadAvatarAndUpdateProfile } from "@/services/user-service";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { getInitials } from "@/lib/utils";
 
@@ -29,10 +29,9 @@ export default function SettingsPage() {
     
     const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file && user) {
+        if (file) {
             try {
-                const photoURL = await uploadAvatar(user.uid, file);
-                await updateUserProfile(user, { photoURL });
+                await uploadAvatarAndUpdateProfile(file);
                 toast({ title: "Success", description: "Profile picture updated!" });
             } catch (error) {
                 console.error("Failed to upload avatar", error);
@@ -54,7 +53,7 @@ export default function SettingsPage() {
         }
         
         try {
-            await updateUserProfile(user, { displayName });
+            await updateUserProfile({ displayName });
             toast({ title: "Success!", description: "Your settings have been saved." });
         } catch (error: any) {
             console.error("Failed to save settings:", error);

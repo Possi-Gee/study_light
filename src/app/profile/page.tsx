@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { getSubmissionsForStudent, QuizSubmission } from "@/services/quizzes-service";
 import { format } from "date-fns";
-import { uploadAvatar, updateUserProfile } from "@/services/user-service";
+import { uploadAvatarAndUpdateProfile } from "@/services/user-service";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuthStore } from "@/hooks/use-auth-store";
@@ -62,10 +62,9 @@ export default function ProfilePage() {
     
     const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file && user) {
+        if (file) {
             try {
-                const photoURL = await uploadAvatar(user.uid, file);
-                await updateUserProfile(user, { photoURL });
+                await uploadAvatarAndUpdateProfile(file);
                 toast({ title: "Success", description: "Profile picture updated!" });
                 setIsDialogOpen(false); // Close dialog on success
             } catch (error) {
