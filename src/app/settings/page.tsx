@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
 import { useState, useRef, useEffect } from "react";
 import { Loader2, Upload } from "lucide-react";
 import { updateUserProfile, uploadAvatar } from "@/services/user-service";
@@ -50,7 +49,6 @@ export default function SettingsPage() {
             return;
         }
 
-        // Disable button if no changes have been made
         if (displayName === user.displayName) {
             return;
         }
@@ -102,7 +100,7 @@ export default function SettingsPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" defaultValue={user?.email || ''} disabled />
+                                <Input id="email" type="email" value={user?.email || ''} disabled readOnly/>
                                 <p className="text-xs text-muted-foreground">Your email address cannot be changed.</p>
                             </div>
                         </CardContent>

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/hooks/use-auth";
 import { LogOut, Mail, User, Shield, Upload, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
@@ -64,7 +63,6 @@ export default function ProfilePage() {
     const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file && user) {
-            // No need to manage a separate loading state here, isUpdating from the store is used.
             try {
                 const photoURL = await uploadAvatar(user.uid, file);
                 await updateUserProfile(user, { photoURL });
