@@ -23,7 +23,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [role, setRole] = useState('student');
 
    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,7 +33,7 @@ export default function LoginPage() {
     const password = formData.get('password') as string;
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
       toast({
         title: "Login Successful",
@@ -43,8 +42,8 @@ export default function LoginPage() {
 
       // NOTE: In a real-world scenario, role management would be more robust.
       // We would check custom claims or a Firestore document to determine the user's role.
-      // For this prototype, we'll keep the client-side role selection.
-      if (role === 'teacher') {
+      // For this prototype, we will check the email for the word 'teacher'.
+      if (userCredential.user.email?.includes('teacher')) {
           router.push('/teacher/dashboard');
       } else {
           router.push('/');
@@ -94,17 +93,6 @@ export default function LoginPage() {
                 </Link>
               </div>
               <Input id="password" name="password" type="password" required />
-            </div>
-             <div className="grid gap-2">
-                <Label>Role</Label>
-                <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                >
-                    <option value="student">Student</option>
-                    <option value="teacher">Teacher</option>
-                </select>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
