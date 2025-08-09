@@ -19,9 +19,9 @@ export default function RegisterPage() {
             <div className="flex justify-center mb-4">
                 <BrainCircuit className="w-12 h-12 text-primary"/>
             </div>
-            <CardTitle className="text-2xl text-center">Create an Account</CardTitle>
+            <CardTitle className="text-2xl text-center font-headline">Create an Account</CardTitle>
             <CardDescription className="text-center">
-                Enter your information to create an account with ScholarSage
+                Enter your information to create an account with SmartStudy Lite
             </CardDescription>
         </CardHeader>
         <CardContent>

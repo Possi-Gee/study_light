@@ -19,7 +19,7 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
               <BrainCircuit className="w-12 h-12 text-primary"/>
           </div>
-          <CardTitle className="text-2xl text-center">Login to ScholarSage</CardTitle>
+          <CardTitle className="text-2xl text-center font-headline">Login to SmartStudy Lite</CardTitle>
           <CardDescription className="text-center">
             Enter your email below to login to your account
           </CardDescription>

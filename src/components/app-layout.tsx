@@ -54,7 +54,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <SidebarHeader>
             <div className="flex items-center gap-2">
                 <BrainCircuit className="text-primary w-8 h-8"/>
-                <h1 className="text-2xl font-bold text-primary">ScholarSage</h1>
+                <h1 className="text-2xl font-bold text-primary font-headline">SmartStudy Lite</h1>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -103,7 +103,7 @@ function UserNav() {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
             <AvatarImage src="https://placehold.co/40x40.png" alt="@student" data-ai-hint="person portrait" />
-            <AvatarFallback>SS</AvatarFallback>
+            <AvatarFallback>SL</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
