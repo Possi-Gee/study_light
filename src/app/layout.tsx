@@ -6,8 +6,8 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { Footer } from '@/components/footer';
 
 export const metadata: Metadata = {
-  title: 'ScholarSage',
-  description: 'AI-powered study assistant for ScholarSage',
+  title: 'StudyLight',
+  description: 'AI-powered study assistant by StudyLight',
 };
 
 export default function RootLayout({

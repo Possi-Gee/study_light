@@ -103,7 +103,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <SidebarHeader>
             <div className="flex items-center gap-2">
                 <GraduationCap className="text-primary w-8 h-8"/>
-                <h1 className="text-2xl font-bold text-primary font-headline">ScholarSage</h1>
+                <h1 className="text-2xl font-bold text-primary font-headline">StudyLight</h1>
             </div>
         </SidebarHeader>
         <SidebarContent>
