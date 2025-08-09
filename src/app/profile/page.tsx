@@ -18,6 +18,7 @@ import { uploadAvatar, updateUserProfile } from "@/services/user-service";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuthStore } from "@/hooks/use-auth-store";
+import { getInitials } from "@/lib/utils";
 
 export default function ProfilePage() {
     const { user, isUpdating } = useAuthStore();
@@ -87,7 +88,7 @@ export default function ProfilePage() {
                         <CardHeader className="items-center text-center">
                             <Avatar className="h-24 w-24 mb-4">
                                 <AvatarImage src={user?.photoURL || undefined} alt="@student"/>
-                                <AvatarFallback>{user?.displayName?.charAt(0) || 'S'}</AvatarFallback>
+                                <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
                             </Avatar>
                             <CardTitle>{user?.displayName || 'Student'}</CardTitle>
                             <CardDescription>{user?.email}</CardDescription>
@@ -117,7 +118,7 @@ export default function ProfilePage() {
                                     <div className="py-4 text-center">
                                         <Avatar className="h-32 w-32 mx-auto mb-4">
                                             <AvatarImage src={user?.photoURL || undefined} alt="@student"/>
-                                            <AvatarFallback>{user?.displayName?.charAt(0) || 'S'}</AvatarFallback>
+                                            <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
                                         </Avatar>
                                         <Input
                                             type="file"

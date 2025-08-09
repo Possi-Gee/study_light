@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Quiz } from "@/lib/quiz-store";
 import { getQuizById } from "@/services/quizzes-service";
+import { getInitials } from "@/lib/utils";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -117,7 +118,7 @@ export default function QuizResultsPage() {
                                             <div className="flex items-center gap-3">
                                                 <Avatar>
                                                     <AvatarImage src={result.avatar} alt={result.name} data-ai-hint="person portrait" />
-                                                    <AvatarFallback>{result.initials}</AvatarFallback>
+                                                    <AvatarFallback>{getInitials(result.name)}</AvatarFallback>
                                                 </Avatar>
                                                 <span className="font-medium">{result.name}</span>
                                             </div>

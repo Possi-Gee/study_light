@@ -44,6 +44,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
+import { getInitials } from "@/lib/utils";
 
 const studentNavItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -144,7 +145,7 @@ function UserNav({name, email, profileUrl, settingsUrl, onLogout}: {name: string
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
             <AvatarImage src={auth.currentUser?.photoURL || undefined} alt="@user" />
-            <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{getInitials(name)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

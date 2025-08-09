@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getInitials } from "@/lib/utils";
 import { ArrowLeft, Mail, User } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -70,7 +71,7 @@ export default function StudentProgressPage() {
                         <CardHeader className="items-center text-center">
                             <Avatar className="h-24 w-24 mb-4">
                                 <AvatarImage src={student.avatar} alt={student.name} />
-                                <AvatarFallback>{student.initials}</AvatarFallback>
+                                <AvatarFallback>{getInitials(student.name)}</AvatarFallback>
                             </Avatar>
                             <CardTitle>{student.name}</CardTitle>
                             <CardDescription>{student.email}</CardDescription>

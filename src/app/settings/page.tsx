@@ -13,6 +13,7 @@ import { useState, useRef, useEffect } from "react";
 import { Loader2, Upload } from "lucide-react";
 import { updateUserProfile, uploadAvatar } from "@/services/user-service";
 import { useAuthStore } from "@/hooks/use-auth-store";
+import { getInitials } from "@/lib/utils";
 
 export default function SettingsPage() {
     const { user, isUpdating } = useAuthStore();
@@ -79,7 +80,7 @@ export default function SettingsPage() {
                             <div className="flex items-center gap-4">
                                 <Avatar className="h-20 w-20">
                                     <AvatarImage src={user?.photoURL || undefined} />
-                                    <AvatarFallback>{displayName?.charAt(0) || 'S'}</AvatarFallback>
+                                    <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
                                 </Avatar>
                                 <Input
                                     type="file"
