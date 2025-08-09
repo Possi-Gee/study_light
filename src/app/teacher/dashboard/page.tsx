@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
+import { getSubjectsCount } from "@/services/notes-service";
+import { getQuizzesCount } from "@/services/quizzes-service";
+import { getStudentsCount } from "@/services/user-service";
 import { BookMarked, PlusCircle, RefreshCw, HelpCircle, Users } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 type DashboardStats = {
     subjects: number;
@@ -20,29 +23,32 @@ export default function TeacherDashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // Simulate fetching data
-    useEffect(() => {
+    const fetchStats = useCallback(async () => {
         setLoading(true);
-        setTimeout(() => {
+        try {
+            const [subjectsCount, quizzesCount, studentsCount] = await Promise.all([
+                getSubjectsCount(),
+                getQuizzesCount(),
+                getStudentsCount(),
+            ]);
             setStats({
-                subjects: 5,
-                quizzes: 12,
-                students: 84,
+                subjects: subjectsCount,
+                quizzes: quizzesCount,
+                students: studentsCount,
             });
+        } catch (error) {
+            console.error("Failed to fetch dashboard stats:", error);
+        } finally {
             setLoading(false);
-        }, 1500);
+        }
     }, []);
 
+    useEffect(() => {
+        fetchStats();
+    }, [fetchStats]);
+
     const handleRefresh = () => {
-        setLoading(true);
-        setTimeout(() => {
-            setStats({
-                subjects: Math.floor(Math.random() * 5) + 3,
-                quizzes: Math.floor(Math.random() * 10) + 10,
-                students: Math.floor(Math.random() * 20) + 80,
-            });
-            setLoading(false);
-        }, 1000);
+        fetchStats();
     }
 
   return (
@@ -54,7 +60,7 @@ export default function TeacherDashboardPage() {
                 <p className="text-muted-foreground">Here's a summary of your teaching activity.</p>
             </div>
             <Button variant="outline" onClick={handleRefresh} disabled={loading}>
-                <RefreshCw className={`mr-2 ${loading ? 'animate-spin' : ''}`}/>
+                <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`}/>
                 Refresh Data
             </Button>
         </div>

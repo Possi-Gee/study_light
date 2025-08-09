@@ -6,36 +6,54 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getInitials } from "@/lib/utils";
-import { ArrowLeft, Mail, User } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, User } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-
-// Mock data for demonstration purposes. In a real app, this would come from a database.
-const studentsData = {
-    "usr-1": { id: "usr-1", name: "Possi Gee", email: "possigee@96mail.com", avatar: "https://placehold.co/100x100.png", initials: "PG", quizHistory: [
-        { quizId: "quiz-1", quiz: "Algebra Basics", score: "8/10", date: "2024-07-28" },
-        { quizId: "quiz-2", quiz: "The Roman Empire", score: "9/10", date: "2024-07-26" },
-        { quizId: "quiz-gen", quiz: "General Knowledge Quiz", score: "3/4", date: "2024-07-21" },
-    ]},
-    "usr-2": { id: "usr-2", name: "Olivia Smith", email: "olivia@example.com", avatar: "https://placehold.co/100x100.png", initials: "OS", quizHistory: [
-        { quizId: "quiz-1", quiz: "Algebra Basics", score: "10/10", date: "2024-07-28" },
-    ]},
-    "usr-3": { id: "usr-3", name: "Noah Williams", email: "noah@example.com", avatar: "https://placehold.co/100x100.png", initials: "NW", quizHistory: [
-         { quizId: "quiz-2", quiz: "The Roman Empire", score: "7/10", date: "2024-07-26" },
-    ]},
-    "usr-4": { id: "usr-4", name: "Emma Brown", email: "emma@example.com", avatar: "https://placehold.co/100x100.png", initials: "EB", quizHistory: [
-        { quizId: "quiz-1", quiz: "Algebra Basics", score: "6/10", date: "2024-07-27" },
-    ]},
-    "usr-5": { id: "usr-5", name: "Oliver Jones", email: "oliver@example.com", avatar: "https://placehold.co/100x100.png", initials: "OJ", quizHistory: [
-        { quizId: "quiz-2", quiz: "The Roman Empire", score: "8/10", date: "2024-07-25" },
-    ]},
-};
+import { UserProfile, getUserById } from "@/services/user-service";
+import { QuizSubmission, getSubmissionsForStudent } from "@/services/quizzes-service";
+import { useEffect, useState, useCallback } from "react";
+import { format } from "date-fns";
 
 
 export default function StudentProgressPage() {
     const params = useParams();
-    const studentId = params.studentId as keyof typeof studentsData;
-    const student = studentsData[studentId];
+    const studentId = params.studentId as string;
+    
+    const [student, setStudent] = useState<UserProfile | null>(null);
+    const [quizHistory, setQuizHistory] = useState<QuizSubmission[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchStudentData = useCallback(async () => {
+        if (!studentId) return;
+        setLoading(true);
+        try {
+            const [studentData, historyData] = await Promise.all([
+                getUserById(studentId),
+                getSubmissionsForStudent(studentId)
+            ]);
+            setStudent(studentData);
+            setQuizHistory(historyData);
+        } catch (error) {
+            console.error("Failed to fetch student data:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [studentId]);
+
+    useEffect(() => {
+        fetchStudentData();
+    }, [fetchStudentData]);
+
+
+    if (loading) {
+        return (
+            <AppLayout>
+                <div className="flex justify-center items-center h-64">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+            </AppLayout>
+        );
+    }
 
     if (!student) {
         return (
@@ -70,7 +88,7 @@ export default function StudentProgressPage() {
                     <Card className="md:col-span-1">
                         <CardHeader className="items-center text-center">
                             <Avatar className="h-24 w-24 mb-4">
-                                <AvatarImage src={student.avatar} alt={student.name} />
+                                <AvatarImage src={student.photoURL || undefined} alt={student.name} />
                                 <AvatarFallback>{getInitials(student.name)}</AvatarFallback>
                             </Avatar>
                             <CardTitle>{student.name}</CardTitle>
@@ -102,12 +120,12 @@ export default function StudentProgressPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {student.quizHistory.length > 0 ? (
-                                        student.quizHistory.map(item => (
-                                            <TableRow key={item.quizId}>
-                                                <TableCell className="font-medium">{item.quiz}</TableCell>
-                                                <TableCell>{item.score}</TableCell>
-                                                <TableCell>{item.date}</TableCell>
+                                    {quizHistory.length > 0 ? (
+                                        quizHistory.map(item => (
+                                            <TableRow key={item.id}>
+                                                <TableCell className="font-medium">{item.quizTitle}</TableCell>
+                                                <TableCell>{item.score}/{item.totalQuestions}</TableCell>
+                                                <TableCell>{format(item.completedAt.toDate(), 'PPp')}</TableCell>
                                             </TableRow>
                                         ))
                                     ) : (

@@ -11,7 +11,8 @@ import {
     updateDoc,
     query,
     collectionGroup,
-    getDoc
+    getDoc,
+    getCountFromServer
 } from "firebase/firestore";
 
 
@@ -30,6 +31,12 @@ export async function getSubjects(): Promise<Subject[]> {
         };
     }));
     return subjects;
+}
+
+export async function getSubjectsCount(): Promise<number> {
+    const subjectsCollection = collection(db, 'subjects');
+    const snapshot = await getCountFromServer(subjectsCollection);
+    return snapshot.data().count;
 }
 
 export async function addSubject(subjectName: string): Promise<Subject> {

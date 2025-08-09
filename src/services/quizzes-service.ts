@@ -13,7 +13,8 @@ import {
     orderBy,
     query,
     where,
-    Timestamp
+    Timestamp,
+    getCountFromServer
 } from "firebase/firestore";
 
 const quizzesCollection = collection(db, 'quizzes');
@@ -26,6 +27,11 @@ export async function getQuizzes(): Promise<Quiz[]> {
         ...(doc.data() as Omit<Quiz, 'id'>),
         id: doc.id
     }));
+}
+
+export async function getQuizzesCount(): Promise<number> {
+    const snapshot = await getCountFromServer(quizzesCollection);
+    return snapshot.data().count;
 }
 
 export async function getQuizById(id: string): Promise<Quiz | null> {
