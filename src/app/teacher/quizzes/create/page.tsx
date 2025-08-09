@@ -19,9 +19,12 @@ type Question = {
     correctAnswer: string;
 };
 
+const subjects = [ "Mathematics", "Science", "History", "Psychology" ];
+
 export default function CreateQuizPage() {
     const router = useRouter();
     const [questions, setQuestions] = useState<Question[]>([]);
+    const [subject, setSubject] = useState('');
 
     const handleSaveQuiz = (e: React.FormEvent) => {
         e.preventDefault();
@@ -75,7 +78,7 @@ export default function CreateQuizPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Quiz Details</CardTitle>
-                            <CardDescription>Provide a title and a short description for your quiz.</CardDescription>
+                            <CardDescription>Provide a title and select a subject for your quiz.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
@@ -83,8 +86,15 @@ export default function CreateQuizPage() {
                                 <Input id="title" name="title" placeholder="e.g. World History: The Middle Ages" required />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea id="description" name="description" placeholder="A brief overview of what this quiz covers." required rows={3} />
+                                <Label htmlFor="subject">Subject</Label>
+                                <Select name="subject" value={subject} onValueChange={setSubject}>
+                                    <SelectTrigger id="subject">
+                                        <SelectValue placeholder="Select a subject" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </CardContent>
                     </Card>

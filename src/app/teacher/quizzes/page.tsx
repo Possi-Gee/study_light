@@ -17,7 +17,7 @@ type QuizQuestion = {
 type Quiz = {
     id: string;
     title: string;
-    description: string;
+    subject: string;
     questions: QuizQuestion[];
 };
 
@@ -25,7 +25,7 @@ const initialQuizzes: Quiz[] = [
     {
         id: "quiz-1",
         title: "Algebra Basics",
-        description: "A quick quiz to test fundamental algebra concepts.",
+        subject: "Mathematics",
         questions: [
             { id: "q-1", question: "Solve for x: 2x + 3 = 11", options: ["3", "4", "5", "6"], answer: "4" },
             { id: "q-2", question: "What is (x+y)^2?", options: ["x^2 + y^2", "x^2 + 2xy + y^2", "x^2 - 2xy + y^2", "2x + 2y"], answer: "x^2 + 2xy + y^2" },
@@ -34,7 +34,7 @@ const initialQuizzes: Quiz[] = [
     {
         id: "quiz-2",
         title: "The Roman Empire",
-        description: "Test your knowledge on the history of ancient Rome.",
+        subject: "History",
         questions: [
             { id: "q-3", question: "Who was the first Roman Emperor?", options: ["Julius Caesar", "Nero", "Augustus", "Constantine"], answer: "Augustus" },
             { id: "q-4", question: "When did the Western Roman Empire fall?", options: ["476 AD", "1453 AD", "44 BC", "753 BC"], answer: "476 AD" }
@@ -43,7 +43,7 @@ const initialQuizzes: Quiz[] = [
     {
         id: "quiz-3",
         title: "Introduction to Psychology",
-        description: "A quiz covering basic concepts in psychology.",
+        subject: "Psychology",
         questions: []
     }
 ];
@@ -79,12 +79,12 @@ export default function TeacherQuizzesPage() {
                                     <CardTitle className="leading-tight">{quiz.title}</CardTitle>
                                     <FileQuestion className="h-6 w-6 text-primary shrink-0 ml-4"/>
                                 </div>
-                                <CardDescription>{quiz.questions.length} question(s)</CardDescription>
+                                <CardDescription>{quiz.subject} - {quiz.questions.length} question(s)</CardDescription>
                             </CardHeader>
                              <CardContent className="flex-grow">
-                                <p className="text-sm text-muted-foreground line-clamp-3">{quiz.description}</p>
+                                {/* <p className="text-sm text-muted-foreground line-clamp-3">{quiz.description}</p> */}
                             </CardContent>
-                            <CardFooter className="flex justify-between items-center">
+                            <CardFooter className="flex justify-between items-center mt-auto">
                                 <div className="flex gap-2">
                                     <Link href={`/teacher/quizzes/${quiz.id}/edit`}>
                                         <Button variant="outline" size="sm">

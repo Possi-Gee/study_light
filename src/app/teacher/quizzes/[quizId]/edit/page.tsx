@@ -16,7 +16,7 @@ import { useState } from "react";
 const initialQuizzes: { [key: string]: QuizData } = {
     "quiz-1": {
         title: "Algebra Basics",
-        description: "A quick quiz to test fundamental algebra concepts.",
+        subject: "Mathematics",
         questions: [
             { id: "q-1", text: "Solve for x: 2x + 3 = 11", options: ["3", "4", "5", "6"], correctAnswer: "4" },
             { id: "q-2", text: "What is (x+y)^2?", options: ["x^2 + y^2", "x^2 + 2xy + y^2", "x^2 - 2xy + y^2", "2x + 2y"], correctAnswer: "x^2 + 2xy + y^2" },
@@ -24,15 +24,17 @@ const initialQuizzes: { [key: string]: QuizData } = {
     },
     "quiz-2": {
         title: "The Roman Empire",
-        description: "Test your knowledge on the history of ancient Rome.",
+        subject: "History",
         questions: []
     },
      "quiz-3": {
         title: "Introduction to Psychology",
-        description: "A quiz covering basic concepts in psychology.",
+        subject: "Psychology",
         questions: []
     }
 };
+
+const subjects = [ "Mathematics", "Science", "History", "Psychology" ];
 
 type Question = {
     id: string;
@@ -43,7 +45,7 @@ type Question = {
 
 type QuizData = {
     title: string;
-    description: string;
+    subject: string;
     questions: Question[];
 }
 
@@ -54,6 +56,7 @@ export default function EditQuizPage() {
     const quizData = initialQuizzes[quizId];
     
     const [questions, setQuestions] = useState<Question[]>(quizData?.questions || []);
+    const [subject, setSubject] = useState<string>(quizData?.subject || '');
 
     const handleSaveQuiz = (e: React.FormEvent) => {
         e.preventDefault();
@@ -123,7 +126,7 @@ export default function EditQuizPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Quiz Details</CardTitle>
-                            <CardDescription>Update the title and description for your quiz.</CardDescription>
+                            <CardDescription>Update the title and subject for your quiz.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
@@ -131,8 +134,15 @@ export default function EditQuizPage() {
                                 <Input id="title" name="title" defaultValue={quizData.title} required />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea id="description" name="description" defaultValue={quizData.description} required rows={3} />
+                                <Label htmlFor="subject">Subject</Label>
+                                <Select name="subject" value={subject} onValueChange={setSubject}>
+                                    <SelectTrigger id="subject">
+                                        <SelectValue placeholder="Select a subject" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </CardContent>
                     </Card>
