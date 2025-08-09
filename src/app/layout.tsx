@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'SmartStudy Lite',
+  title: 'StudyLight',
   description: 'AI-powered study assistant',
 };
 

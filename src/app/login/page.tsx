@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { BrainCircuit } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -35,9 +35,9 @@ export default function LoginPage() {
       <Card className="mx-auto max-w-sm w-full">
         <CardHeader>
           <div className="flex justify-center mb-4">
-              <BrainCircuit className="w-12 h-12 text-primary"/>
+              <GraduationCap className="w-12 h-12 text-primary"/>
           </div>
-          <CardTitle className="text-2xl text-center font-headline">Login to SmartStudy Lite</CardTitle>
+          <CardTitle className="text-2xl text-center font-headline">Login to StudyLight</CardTitle>
           <CardDescription className="text-center">
             Enter your email below to login to your account
           </CardDescription>

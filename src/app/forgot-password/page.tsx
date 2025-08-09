@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { BrainCircuit } from "lucide-react"
+import { GraduationCap } from "lucide-react"
 import Link from "next/link"
 
 export default function ForgotPasswordPage() {
@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
         <Card className="mx-auto max-w-sm w-full">
         <CardHeader>
             <div className="flex justify-center mb-4">
-                <BrainCircuit className="w-12 h-12 text-primary"/>
+                <GraduationCap className="w-12 h-12 text-primary"/>
             </div>
             <CardTitle className="text-2xl text-center">Forgot Password</CardTitle>
             <CardDescription className="text-center">
