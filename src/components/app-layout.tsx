@@ -82,6 +82,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const userName = user?.displayName || userRole;
   const userEmail = user?.email || '';
   const profileUrl = isTeacher ? '#' : '/profile';
+  const settingsUrl = '/settings';
 
 
   return (
@@ -126,7 +127,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <SidebarInset>
         <header className="flex h-14 items-center justify-between border-b bg-background px-4 sm:justify-end">
           <SidebarTrigger className="sm:hidden" />
-          <UserNav name={userName} email={userEmail} profileUrl={profileUrl} onLogout={handleLogout} />
+          <UserNav name={userName} email={userEmail} profileUrl={profileUrl} settingsUrl={settingsUrl} onLogout={handleLogout} />
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
             {children}
@@ -136,13 +137,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
   );
 }
 
-function UserNav({name, email, profileUrl, onLogout}: {name: string, email: string, profileUrl: string, onLogout: () => void}) {
+function UserNav({name, email, profileUrl, settingsUrl, onLogout}: {name: string, email: string, profileUrl: string, settingsUrl: string, onLogout: () => void}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src="https://placehold.co/40x40.png" alt="@user" data-ai-hint="person portrait" />
+            <AvatarImage src={auth.currentUser?.photoURL || "https://placehold.co/40x40.png"} alt="@user" data-ai-hint="person portrait" />
             <AvatarFallback>{name.charAt(0)}</AvatarFallback>
           </Avatar>
         </Button>
@@ -163,9 +164,11 @@ function UserNav({name, email, profileUrl, onLogout}: {name: string, email: stri
             <span>Profile</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
+        <DropdownMenuItem asChild>
+          <Link href={settingsUrl}>
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onLogout}>

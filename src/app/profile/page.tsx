@@ -4,12 +4,15 @@ import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
-import { LogOut, Mail, User, Shield } from "lucide-react";
+import { LogOut, Mail, User, Shield, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState, useRef } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 
@@ -24,6 +27,9 @@ export default function ProfilePage() {
     const { user } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState(user?.photoURL || "https://placehold.co/100x100.png");
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleLogout = async () => {
         try {
@@ -34,6 +40,21 @@ export default function ProfilePage() {
             toast({ variant: "destructive", title: "Logout failed." });
         }
     }
+    
+    const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatarUrl(reader.result as string);
+                // Here you would typically upload the file to a storage service (like Firebase Storage)
+                // and update the user's profile URL in the database.
+                toast({ title: "Profile picture updated locally." });
+                setIsDialogOpen(false);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     return (
         <AppLayout>
@@ -46,7 +67,7 @@ export default function ProfilePage() {
                     <Card className="md:col-span-1">
                         <CardHeader className="items-center text-center">
                             <Avatar className="h-24 w-24 mb-4">
-                                <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} alt="@student" data-ai-hint="person portrait"/>
+                                <AvatarImage src={avatarUrl} alt="@student" data-ai-hint="person portrait"/>
                                 <AvatarFallback>{user?.displayName?.charAt(0) || 'S'}</AvatarFallback>
                             </Avatar>
                             <CardTitle>{user?.displayName || 'Student'}</CardTitle>
@@ -65,7 +86,37 @@ export default function ProfilePage() {
                                 <Shield className="mr-2 h-4 w-4 text-muted-foreground"/>
                                 <span>Role: Student</span>
                             </div>
-                            <Button variant="outline" className="w-full">Edit Profile</Button>
+                             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" className="w-full">Edit Profile</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Edit Profile</DialogTitle>
+                                        <DialogDescription>Update your profile picture.</DialogDescription>
+                                    </DialogHeader>
+                                    <div className="py-4 text-center">
+                                        <Avatar className="h-32 w-32 mx-auto mb-4">
+                                            <AvatarImage src={avatarUrl} alt="@student" data-ai-hint="person portrait"/>
+                                            <AvatarFallback>{user?.displayName?.charAt(0) || 'S'}</AvatarFallback>
+                                        </Avatar>
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            ref={fileInputRef}
+                                            onChange={handleAvatarUpload}
+                                        />
+                                        <Button onClick={() => fileInputRef.current?.click()}>
+                                            <Upload className="mr-2 h-4 w-4"/>
+                                            Upload Picture
+                                        </Button>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                             <Button variant="destructive" className="w-full" onClick={handleLogout}>
                                 <LogOut className="mr-2 h-4 w-4"/>
                                 Logout

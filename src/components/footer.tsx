@@ -8,7 +8,7 @@ export function Footer() {
     return (
         <footer className="bg-background border-t">
             <div className="container mx-auto py-6 px-4 md:px-6 flex flex-col md:flex-row items-center justify-between">
-                <p className="text-sm text-muted-foreground">&copy; 2024 ScholarSage. All rights reserved.</p>
+                <p className="text-sm text-muted-foreground">&copy; 2024 SmartStudy Lite. All rights reserved.</p>
                 <div className="flex gap-4 mt-4 md:mt-0">
                     <Link href="#" className="text-muted-foreground hover:text-foreground">
                         <Twitter className="h-5 w-5" />
