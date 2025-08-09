@@ -94,7 +94,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const userName = user?.displayName || userRoleDisplay;
   const userEmail = user?.email || '';
 
-  const profileUrl = isTeacher ? '/teacher/dashboard' : '/profile';
+  const profileUrl = isTeacher ? '/teacher/profile' : '/profile';
   const settingsUrl = isTeacher ? '/teacher/settings' : '/settings';
 
   return (
@@ -157,7 +157,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
 function UserNav({name, email, profileUrl, settingsUrl, onLogout}: {name: string, email: string, profileUrl: string, settingsUrl: string, onLogout: () => void}) {
   const isTeacher = useRole().role === 'teacher';
-  const actualProfileUrl = isTeacher ? '/teacher/dashboard' : '/profile';
+  const actualProfileUrl = isTeacher ? '/teacher/profile' : '/profile';
   
   return (
     <DropdownMenu>
