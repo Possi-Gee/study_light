@@ -49,14 +49,15 @@ export default function SettingsPage() {
             toast({ variant: "destructive", title: "Error", description: "You must be logged in to save changes." });
             return;
         }
+
+        // Disable button if no changes have been made
+        if (displayName === user.displayName) {
+            return;
+        }
         
         try {
-            if (displayName !== user.displayName) {
-                await updateUserProfile(user, { displayName });
-            }
-            
+            await updateUserProfile(user, { displayName });
             toast({ title: "Success!", description: "Your settings have been saved." });
-
         } catch (error: any) {
             console.error("Failed to save settings:", error);
             toast({ variant: "destructive", title: "Error", description: error.message || "Could not save your changes." });
@@ -97,7 +98,7 @@ export default function SettingsPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="displayName">Display Name</Label>
-                                <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                                <Input id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)} disabled={isUpdating} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="email">Email</Label>
@@ -128,7 +129,7 @@ export default function SettingsPage() {
                         </CardContent>
                     </Card>
                     <div className="flex justify-end">
-                        <Button type="submit" disabled={isUpdating}>
+                        <Button type="submit" disabled={isUpdating || displayName === user?.displayName}>
                             {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Save Changes
                         </Button>

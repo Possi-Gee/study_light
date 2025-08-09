@@ -64,6 +64,7 @@ export default function ProfilePage() {
     const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file && user) {
+            // No need to manage a separate loading state here, isUpdating from the store is used.
             try {
                 const photoURL = await uploadAvatar(user.uid, file);
                 await updateUserProfile(user, { photoURL });
