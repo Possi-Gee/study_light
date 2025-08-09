@@ -6,8 +6,8 @@ import { AuthProvider } from '@/hooks/use-auth';
 import { Footer } from '@/components/footer';
 
 export const metadata: Metadata = {
-  title: 'SmartStudy Lite',
-  description: 'AI-powered study assistant',
+  title: 'ScholarSage',
+  description: 'AI-powered study assistant for ScholarSage',
 };
 
 export default function RootLayout({
@@ -17,14 +17,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark h-full">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
-      </head>
+      <head/>
       <body className="font-body antialiased flex flex-col h-full">
         <AuthProvider>
-            {children}
+            <div className="flex flex-col min-h-screen">
+              <div className="flex-grow">
+                {children}
+              </div>
+              <Footer />
+            </div>
         </AuthProvider>
         <Toaster />
       </body>

@@ -173,11 +173,11 @@ export default function QuizTakingPage() {
     const isPassing = quizData && score / quizData.questions.length >= 0.7; // 70% to pass
     return (
       <AppLayout>
-        <div className="flex flex-col items-center gap-8 w-full">
+        <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto">
             {isPassing && <ReactConfetti width={width} height={height} recycle={false} numberOfPieces={500} />}
             
             {isPassing ? (
-                 <div className="w-full max-w-4xl">
+                 <div className="w-full">
                      <h2 className="text-2xl font-bold text-center mb-4">Congratulations! You earned a certificate.</h2>
                     <Certificate
                         ref={certificateRef}
@@ -191,7 +191,7 @@ export default function QuizTakingPage() {
                  <h2 className="text-2xl font-bold text-center mb-4">Review your results below.</h2>
             )}
 
-            <Card className="max-w-2xl mx-auto w-full">
+            <Card className="w-full">
             <CardHeader>
                 <CardTitle>Quiz Results for "{quizData.title}"</CardTitle>
                 <CardDescription>You scored {score} out of {quizData.questions.length}!</CardDescription>

@@ -47,7 +47,6 @@ import { signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { getInitials } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
-import { Footer } from "./footer";
 
 const studentNavItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -104,7 +103,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <SidebarHeader>
             <div className="flex items-center gap-2">
                 <GraduationCap className="text-primary w-8 h-8"/>
-                <h1 className="text-2xl font-bold text-primary font-headline">SmartStudy Lite</h1>
+                <h1 className="text-2xl font-bold text-primary font-headline">ScholarSage</h1>
             </div>
         </SidebarHeader>
         <SidebarContent>
@@ -151,14 +150,15 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
             {children}
         </main>
-        <Footer />
       </SidebarInset>
     </SidebarProvider>
   );
 }
 
 function UserNav({name, email, profileUrl, settingsUrl, onLogout}: {name: string, email: string, profileUrl: string, settingsUrl: string, onLogout: () => void}) {
-  const isTeacher = useRole().role === 'teacher';
+  const { user } = useAuth();
+  const { role } = useRole();
+  const isTeacher = role === 'teacher';
   const actualProfileUrl = isTeacher ? '/teacher/profile' : '/profile';
   
   return (
@@ -166,7 +166,7 @@ function UserNav({name, email, profileUrl, settingsUrl, onLogout}: {name: string
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={auth.currentUser?.photoURL || undefined} alt="@user" />
+            <AvatarImage src={user?.photoURL || undefined} alt="@user" />
             <AvatarFallback>{getInitials(name)}</AvatarFallback>
           </Avatar>
         </Button>
