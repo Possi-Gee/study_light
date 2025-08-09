@@ -7,23 +7,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
-import { auth } from "@/lib/firebase";
-import { signOut } from "firebase/auth";
 import { LogOut, Mail, User, Shield, Upload, Loader2 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { getSubmissionsForStudent, QuizSubmission } from "@/services/quizzes-service";
 import { format } from "date-fns";
+import { uploadAvatar, updateUserProfile } from "@/services/user-service";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function ProfilePage() {
     const { user } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [avatarUrl, setAvatarUrl] = useState(user?.photoURL || "https://placehold.co/100x100.png");
+    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [quizHistory, setQuizHistory] = useState<QuizSubmission[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
@@ -60,18 +60,21 @@ export default function ProfilePage() {
         }
     }
     
-    const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatarUrl(reader.result as string);
-                // Here you would typically upload the file to a storage service (like Firebase Storage)
-                // and update the user's profile URL in the database.
-                toast({ title: "Profile picture updated locally." });
+        if (file && user) {
+            setIsUploading(true);
+            try {
+                const photoURL = await uploadAvatar(user.uid, file);
+                await updateUserProfile(user, { photoURL });
+                toast({ title: "Success", description: "Profile picture updated!" });
                 setIsDialogOpen(false);
-            };
-            reader.readAsDataURL(file);
+            } catch (error) {
+                console.error("Failed to upload avatar", error);
+                toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload your new picture." });
+            } finally {
+                setIsUploading(false);
+            }
         }
     };
 
@@ -86,7 +89,7 @@ export default function ProfilePage() {
                     <Card className="md:col-span-1">
                         <CardHeader className="items-center text-center">
                             <Avatar className="h-24 w-24 mb-4">
-                                <AvatarImage src={avatarUrl} alt="@student" data-ai-hint="person portrait"/>
+                                <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} alt="@student" data-ai-hint="person portrait"/>
                                 <AvatarFallback>{user?.displayName?.charAt(0) || 'S'}</AvatarFallback>
                             </Avatar>
                             <CardTitle>{user?.displayName || 'Student'}</CardTitle>
@@ -116,7 +119,7 @@ export default function ProfilePage() {
                                     </DialogHeader>
                                     <div className="py-4 text-center">
                                         <Avatar className="h-32 w-32 mx-auto mb-4">
-                                            <AvatarImage src={avatarUrl} alt="@student" data-ai-hint="person portrait"/>
+                                            <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} alt="@student" data-ai-hint="person portrait"/>
                                             <AvatarFallback>{user?.displayName?.charAt(0) || 'S'}</AvatarFallback>
                                         </Avatar>
                                         <Input
@@ -125,14 +128,19 @@ export default function ProfilePage() {
                                             className="hidden"
                                             ref={fileInputRef}
                                             onChange={handleAvatarUpload}
+                                            disabled={isUploading}
                                         />
-                                        <Button onClick={() => fileInputRef.current?.click()}>
-                                            <Upload className="mr-2 h-4 w-4"/>
-                                            Upload Picture
+                                        <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                                            {isUploading ? (
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                                            ) : (
+                                                <Upload className="mr-2 h-4 w-4"/>
+                                            )}
+                                            {isUploading ? 'Uploading...' : 'Upload Picture'}
                                         </Button>
                                     </div>
                                     <DialogFooter>
-                                        <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                                        <Button variant="ghost" onClick={() => setIsDialogOpen(false)} disabled={isUploading}>Cancel</Button>
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>

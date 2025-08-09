@@ -9,30 +9,39 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Loader2, Upload } from "lucide-react";
-import { updateProfile } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { updateUserProfile, uploadAvatar } from "@/services/user-service";
 
 export default function SettingsPage() {
     const { user } = useAuth();
     const { toast } = useToast();
 
-    const [displayName, setDisplayName] = useState(user?.displayName || '');
-    const [avatarUrl, setAvatarUrl] = useState(user?.photoURL || "https://placehold.co/100x100.png");
+    const [displayName, setDisplayName] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
-    const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    useEffect(() => {
+        if (user) {
+            setDisplayName(user.displayName || '');
+        }
+    }, [user]);
+    
+    const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatarUrl(reader.result as string);
-                // In a real app, you'd upload to storage and update the user profile URL
-                toast({ title: "Profile picture updated locally." });
-            };
-            reader.readAsDataURL(file);
+        if (file && user) {
+            setIsUploading(true);
+            try {
+                const photoURL = await uploadAvatar(user.uid, file);
+                await updateUserProfile(user, { photoURL });
+                toast({ title: "Success", description: "Profile picture updated!" });
+            } catch (error) {
+                console.error("Failed to upload avatar", error);
+                toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload your new picture." });
+            } finally {
+                setIsUploading(false);
+            }
         }
     };
     
@@ -47,14 +56,9 @@ export default function SettingsPage() {
         setIsSaving(true);
         
         try {
-            // Update display name
             if (displayName !== user.displayName) {
-                await updateProfile(user, { displayName });
+                await updateUserProfile(user, { displayName });
             }
-
-            // Password change logic would go here.
-            // It often requires re-authentication for security and is more complex.
-            // For this prototype, we'll focus on the name and picture.
             
             toast({ title: "Success!", description: "Your settings have been saved." });
 
@@ -64,7 +68,6 @@ export default function SettingsPage() {
         } finally {
             setIsSaving(false);
         }
-
     }
 
     return (
@@ -83,7 +86,7 @@ export default function SettingsPage() {
                         <CardContent className="space-y-6">
                             <div className="flex items-center gap-4">
                                 <Avatar className="h-20 w-20">
-                                    <AvatarImage src={avatarUrl} data-ai-hint="person portrait" />
+                                    <AvatarImage src={user?.photoURL || "https://placehold.co/100x100.png"} data-ai-hint="person portrait" />
                                     <AvatarFallback>{displayName?.charAt(0) || 'S'}</AvatarFallback>
                                 </Avatar>
                                 <Input
@@ -92,10 +95,11 @@ export default function SettingsPage() {
                                     className="hidden"
                                     ref={fileInputRef}
                                     onChange={handleAvatarUpload}
+                                    disabled={isUploading}
                                 />
-                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                                    <Upload className="mr-2 h-4 w-4"/>
-                                    Change Photo
+                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Upload className="mr-2 h-4 w-4"/>}
+                                    {isUploading ? "Uploading..." : "Change Photo"}
                                 </Button>
                             </div>
                             <div className="space-y-2">

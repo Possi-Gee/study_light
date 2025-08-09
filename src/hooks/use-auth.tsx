@@ -1,35 +1,26 @@
 
 'use client';
 
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { useEffect, ReactNode } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+import { useAuthStore } from './use-auth-store';
 
 const unprotectedRoutes = ['/login', '/register', '/forgot-password'];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading, setUser } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setLoading(false);
     });
-
     return () => unsubscribe();
-  }, []);
+  }, [setUser]);
 
   useEffect(() => {
     if (!loading && !user && !unprotectedRoutes.includes(pathname)) {
@@ -45,9 +36,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  return <AuthContext.Provider value={{ user, loading }}>{children}</AuthContext.Provider>;
+  return <>{children}</>;
 }
 
 export const useAuth = () => {
-  return useContext(AuthContext);
-};
+    return useAuthStore();
+}
