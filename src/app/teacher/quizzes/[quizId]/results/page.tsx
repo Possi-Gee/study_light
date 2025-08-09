@@ -5,40 +5,34 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useQuizStore } from "@/lib/quiz-store";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
 // Mock data for demonstration purposes
-const quizResults = {
-    "quiz-1": {
-        title: "Algebra Basics",
-        results: [
-            { studentId: "usr-1", name: "Liam Johnson", avatar: "https://placehold.co/100x100.png", initials: "LJ", score: "8/10", date: "2024-07-28" },
-            { studentId: "usr-2", name: "Olivia Smith", avatar: "https://placehold.co/100x100.png", initials: "OS", score: "10/10", date: "2024-07-28" },
-            { studentId: "usr-4", name: "Emma Brown", avatar: "https://placehold.co/100x100.png", initials: "EB", score: "6/10", date: "2024-07-27" },
-        ]
-    },
-    "quiz-2": {
-        title: "The Roman Empire",
-        results: [
-            { studentId: "usr-1", name: "Liam Johnson", avatar: "https://placehold.co/100x100.png", initials: "LJ", score: "9/10", date: "2024-07-26" },
-            { studentId: "usr-3", name: "Noah Williams", avatar: "https://placehold.co/100x100.png", initials: "NW", score: "7/10", date: "2024-07-26" },
-            { studentId: "usr-5", name: "Oliver Jones", avatar: "https://placehold.co/100x100.png", initials: "OJ", score: "8/10", date: "2024-07-25" },
-        ]
-    },
-    "quiz-3": {
-        title: "Introduction to Psychology",
-        results: []
-    }
+const quizTakers = {
+    "quiz-1": [
+        { studentId: "usr-1", name: "Liam Johnson", avatar: "https://placehold.co/100x100.png", initials: "LJ", score: "8/10", date: "2024-07-28" },
+        { studentId: "usr-2", name: "Olivia Smith", avatar: "https://placehold.co/100x100.png", initials: "OS", score: "10/10", date: "2024-07-28" },
+        { studentId: "usr-4", name: "Emma Brown", avatar: "https://placehold.co/100x100.png", initials: "EB", score: "6/10", date: "2024-07-27" },
+    ],
+    "quiz-2": [
+        { studentId: "usr-1", name: "Liam Johnson", avatar: "https://placehold.co/100x100.png", initials: "LJ", score: "9/10", date: "2024-07-26" },
+        { studentId: "usr-3", name: "Noah Williams", avatar: "https://placehold.co/100x100.png", initials: "NW", score: "7/10", date: "2024-07-26" },
+        { studentId: "usr-5", name: "Oliver Jones", avatar: "https://placehold.co/100x100.png", initials: "OJ", score: "8/10", date: "2024-07-25" },
+    ],
+    "quiz-3": []
 };
 
 export default function QuizResultsPage() {
     const params = useParams();
-    const quizId = params.quizId as keyof typeof quizResults;
-    const data = quizResults[quizId];
+    const quizId = params.quizId as string;
+    const { getQuizById } = useQuizStore();
+    const quiz = getQuizById(quizId);
+    const results = quizTakers[quizId as keyof typeof quizTakers] || [];
 
-    if (!data) {
+    if (!quiz) {
         return (
             <AppLayout>
                 <div className="text-center">
@@ -63,7 +57,7 @@ export default function QuizResultsPage() {
                         <ArrowLeft className="mr-2 h-4 w-4"/>
                         Back to Quizzes
                     </Link>
-                    <h1 className="text-3xl font-bold tracking-tight">Results for "{data.title}"</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Results for "{quiz.title}"</h1>
                     <p className="text-muted-foreground">A summary of student performance on this quiz.</p>
                 </div>
 
@@ -71,8 +65,8 @@ export default function QuizResultsPage() {
                     <CardHeader>
                         <CardTitle>Student Submissions</CardTitle>
                         <CardDescription>
-                            {data.results.length > 0
-                                ? `Showing ${data.results.length} result(s).`
+                            {results.length > 0
+                                ? `Showing ${results.length} result(s).`
                                 : "No students have completed this quiz yet."
                             }
                         </CardDescription>
@@ -87,7 +81,7 @@ export default function QuizResultsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {data.results.map(result => (
+                                {results.map(result => (
                                     <TableRow key={result.studentId}>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
@@ -102,7 +96,7 @@ export default function QuizResultsPage() {
                                         <TableCell className="text-muted-foreground">{result.date}</TableCell>
                                     </TableRow>
                                 ))}
-                                 {data.results.length === 0 && (
+                                 {results.length === 0 && (
                                     <TableRow>
                                         <TableCell colSpan={3} className="h-24 text-center">
                                             No results to display.

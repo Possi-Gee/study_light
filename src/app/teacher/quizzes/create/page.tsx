@@ -7,30 +7,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useQuizStore, subjects, QuizQuestion } from "@/lib/quiz-store";
 import { ArrowLeft, BrainCircuit, PlusCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-type Question = {
-    id: string;
-    text: string;
-    options: string[];
-    correctAnswer: string;
-};
-
-const subjects = [ "Mathematics", "Science", "History", "Psychology" ];
-
 export default function CreateQuizPage() {
     const router = useRouter();
-    const [questions, setQuestions] = useState<Question[]>([]);
+    const { addQuiz } = useQuizStore();
+    const [title, setTitle] = useState('');
     const [subject, setSubject] = useState('');
+    const [questions, setQuestions] = useState<QuizQuestion[]>([]);
 
     const handleSaveQuiz = (e: React.FormEvent) => {
         e.preventDefault();
-        // Here you would typically handle form submission,
-        // save the data, and then redirect.
-        console.log("Quiz saved!", { questions });
+        addQuiz({ title, subject, questions });
         router.push('/teacher/quizzes');
     };
 
@@ -83,11 +75,11 @@ export default function CreateQuizPage() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Quiz Title</Label>
-                                <Input id="title" name="title" placeholder="e.g. World History: The Middle Ages" required />
+                                <Input id="title" name="title" placeholder="e.g. World History: The Middle Ages" required value={title} onChange={(e) => setTitle(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="subject">Subject</Label>
-                                <Select name="subject" value={subject} onValueChange={setSubject}>
+                                <Select name="subject" value={subject} onValueChange={setSubject} required>
                                     <SelectTrigger id="subject">
                                         <SelectValue placeholder="Select a subject" />
                                     </SelectTrigger>
@@ -152,7 +144,7 @@ export default function CreateQuizPage() {
                     </Card>
                      <div className="flex justify-end gap-2">
                         <Button type="button" variant="ghost" onClick={() => router.push('/teacher/quizzes')}>Cancel</Button>
-                        <Button type="submit" size="lg">Save Quiz</Button>
+                        <Button type="submit" size="lg" disabled={!title || !subject}>Save Quiz</Button>
                     </div>
                 </form>
             </div>

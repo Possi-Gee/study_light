@@ -7,60 +7,35 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useQuizStore, subjects, QuizQuestion } from "@/lib/quiz-store";
 import { ArrowLeft, BrainCircuit, PlusCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-
-// Mock data, in a real app this would be fetched
-const initialQuizzes: { [key: string]: QuizData } = {
-    "quiz-1": {
-        title: "Algebra Basics",
-        subject: "Mathematics",
-        questions: [
-            { id: "q-1", text: "Solve for x: 2x + 3 = 11", options: ["3", "4", "5", "6"], correctAnswer: "4" },
-            { id: "q-2", text: "What is (x+y)^2?", options: ["x^2 + y^2", "x^2 + 2xy + y^2", "x^2 - 2xy + y^2", "2x + 2y"], correctAnswer: "x^2 + 2xy + y^2" },
-        ]
-    },
-    "quiz-2": {
-        title: "The Roman Empire",
-        subject: "History",
-        questions: []
-    },
-     "quiz-3": {
-        title: "Introduction to Psychology",
-        subject: "Psychology",
-        questions: []
-    }
-};
-
-const subjects = [ "Mathematics", "Science", "History", "Psychology" ];
-
-type Question = {
-    id: string;
-    text: string;
-    options: string[];
-    correctAnswer: string;
-};
-
-type QuizData = {
-    title: string;
-    subject: string;
-    questions: Question[];
-}
+import { useEffect, useState } from "react";
 
 export default function EditQuizPage() {
     const router = useRouter();
     const params = useParams();
-    const quizId = params.quizId as keyof typeof initialQuizzes;
-    const quizData = initialQuizzes[quizId];
+    const quizId = params.quizId as string;
     
-    const [questions, setQuestions] = useState<Question[]>(quizData?.questions || []);
-    const [subject, setSubject] = useState<string>(quizData?.subject || '');
+    const { getQuizById, updateQuiz } = useQuizStore();
+    const quizData = getQuizById(quizId);
+    
+    const [title, setTitle] = useState('');
+    const [subject, setSubject] = useState('');
+    const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+
+    useEffect(() => {
+        if (quizData) {
+            setTitle(quizData.title);
+            setSubject(quizData.subject);
+            setQuestions(quizData.questions);
+        }
+    }, [quizData]);
 
     const handleSaveQuiz = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Quiz saved!", { questions });
+        updateQuiz(quizId, { title, subject, questions });
         router.push('/teacher/quizzes');
     };
     
@@ -91,7 +66,6 @@ export default function EditQuizPage() {
             return q;
         }));
     };
-
 
     if (!quizData) {
         return (
@@ -131,11 +105,11 @@ export default function EditQuizPage() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Quiz Title</Label>
-                                <Input id="title" name="title" defaultValue={quizData.title} required />
+                                <Input id="title" name="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="subject">Subject</Label>
-                                <Select name="subject" value={subject} onValueChange={setSubject}>
+                                <Select name="subject" value={subject} onValueChange={setSubject} required>
                                     <SelectTrigger id="subject">
                                         <SelectValue placeholder="Select a subject" />
                                     </SelectTrigger>
@@ -202,7 +176,7 @@ export default function EditQuizPage() {
                     </Card>
                      <div className="flex justify-end gap-2">
                         <Button type="button" variant="ghost" onClick={() => router.push('/teacher/quizzes')}>Cancel</Button>
-                        <Button type="submit" size="lg">Save Quiz</Button>
+                        <Button type="submit" size="lg">Save Changes</Button>
                     </div>
                 </form>
             </div>

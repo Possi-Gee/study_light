@@ -3,58 +3,12 @@
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuizStore, Quiz } from "@/lib/quiz-store";
 import { FileQuestion, PlusCircle, Trash2, Edit, BarChart } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-
-type QuizQuestion = {
-    id: string;
-    question: string;
-    options: string[];
-    answer: string;
-};
-
-type Quiz = {
-    id: string;
-    title: string;
-    subject: string;
-    questions: QuizQuestion[];
-};
-
-const initialQuizzes: Quiz[] = [
-    {
-        id: "quiz-1",
-        title: "Algebra Basics",
-        subject: "Mathematics",
-        questions: [
-            { id: "q-1", question: "Solve for x: 2x + 3 = 11", options: ["3", "4", "5", "6"], answer: "4" },
-            { id: "q-2", question: "What is (x+y)^2?", options: ["x^2 + y^2", "x^2 + 2xy + y^2", "x^2 - 2xy + y^2", "2x + 2y"], answer: "x^2 + 2xy + y^2" },
-        ]
-    },
-    {
-        id: "quiz-2",
-        title: "The Roman Empire",
-        subject: "History",
-        questions: [
-            { id: "q-3", question: "Who was the first Roman Emperor?", options: ["Julius Caesar", "Nero", "Augustus", "Constantine"], answer: "Augustus" },
-            { id: "q-4", question: "When did the Western Roman Empire fall?", options: ["476 AD", "1453 AD", "44 BC", "753 BC"], answer: "476 AD" }
-        ]
-    },
-    {
-        id: "quiz-3",
-        title: "Introduction to Psychology",
-        subject: "Psychology",
-        questions: []
-    }
-];
-
 
 export default function TeacherQuizzesPage() {
-    const [quizzes, setQuizzes] = useState<Quiz[]>(initialQuizzes);
-
-    const handleDeleteQuiz = (quizId: string) => {
-        setQuizzes(quizzes.filter(q => q.id !== quizId));
-    };
+    const { quizzes, deleteQuiz } = useQuizStore();
 
     return (
         <AppLayout>
@@ -97,7 +51,7 @@ export default function TeacherQuizzesPage() {
                                         </Button>
                                     </Link>
                                 </div>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-9 w-9" onClick={() => handleDeleteQuiz(quiz.id)}>
+                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-9 w-9" onClick={() => deleteQuiz(quiz.id)}>
                                     <Trash2 className="h-4 w-4"/>
                                 </Button>
                             </CardFooter>
