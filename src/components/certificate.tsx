@@ -20,7 +20,7 @@ export const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
       >
         <div className="flex-grow flex flex-col justify-center items-center text-center border-4 border-primary/50 p-4 sm:p-6 rounded-lg relative">
            <div className="absolute top-4 left-4 text-left">
-             <h2 className="text-lg font-bold tracking-wider text-primary">ScholarSage</h2>
+             <h2 className="text-lg font-bold tracking-wider text-primary">StudyLight</h2>
            </div>
           <div className="mb-2 sm:mb-4 mt-6 sm:mt-0">
             <GraduationCap className="h-12 w-12 sm:h-16 sm:w-16 text-primary" />
@@ -43,7 +43,7 @@ export const Certificate = forwardRef<HTMLDivElement, CertificateProps>(
           <div className="flex justify-between w-full mt-auto pt-4 sm:pt-6 text-xs sm:text-sm">
             <div className="text-center">
               <p className="font-semibold border-t-2 border-primary pt-1 px-2 sm:px-4">
-                ScholarSage
+                StudyLight
               </p>
               <p className="text-xs">Authorized Platform</p>
             </div>
