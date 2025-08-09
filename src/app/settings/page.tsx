@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useRef, useEffect } from "react";
 import { Loader2, Upload } from "lucide-react";
-import { updateUserProfile, uploadAvatarAndUpdateProfile } from "@/services/user-service";
+import { uploadAvatarAndUpdateProfile, updateUserProfile } from "@/services/user-service";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { getInitials } from "@/lib/utils";
 

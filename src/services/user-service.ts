@@ -15,8 +15,8 @@ export async function uploadAvatarAndUpdateProfile(file: File) {
   try {
     // 1. Upload the file to Firebase Storage
     const storageRef = ref(storage, `avatars/${currentUser.uid}/${file.name}`);
-    await uploadBytes(storageRef, file);
-    const photoURL = await getDownloadURL(storageRef);
+    const snapshot = await uploadBytes(storageRef, file);
+    const photoURL = await getDownloadURL(snapshot.ref);
 
     // 2. Update the user's profile with the new photoURL
     await updateProfile(currentUser, { photoURL });
@@ -25,12 +25,18 @@ export async function uploadAvatarAndUpdateProfile(file: File) {
     await currentUser.reload();
     
     // 4. Set the latest user object in our store to trigger UI updates
-    useAuthStore.getState().setUser(auth.currentUser);
+    // This is important to make sure the UI reflects the change immediately
+    const refreshedUser = auth.currentUser;
+    if (refreshedUser) {
+        useAuthStore.getState().setUser(refreshedUser);
+    }
 
   } catch (error) {
     console.error("Error uploading avatar and updating profile:", error);
+    // Re-throw the error so the component can catch it and show a toast
     throw error;
   } finally {
+    // 5. ALWAYS ensure the updating state is reset
     useAuthStore.getState().setUpdating(false);
   }
 }
@@ -38,17 +44,20 @@ export async function uploadAvatarAndUpdateProfile(file: File) {
 export async function updateUserProfile(
   updates: { displayName?: string }
 ) {
-  if (!auth.currentUser) {
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
     throw new Error("User not authenticated");
   }
 
   useAuthStore.getState().setUpdating(true);
 
   try {
-    await updateProfile(auth.currentUser, updates);
-    await auth.currentUser.reload();
-    useAuthStore.getState().setUser(auth.currentUser);
-
+    await updateProfile(currentUser, updates);
+    await currentUser.reload();
+     const refreshedUser = auth.currentUser;
+    if (refreshedUser) {
+        useAuthStore.getState().setUser(refreshedUser);
+    }
   } catch (error) {
     console.error("Error updating profile:", error);
     throw error;
