@@ -82,7 +82,7 @@ export default function RegisterPage() {
             <form className="grid gap-4" onSubmit={handleRegister}>
                 <div className="grid gap-2">
                     <Label htmlFor="full-name">Full name</Label>
-                    <Input id="full-name" name="full-name" placeholder="John Doe" required />
+                    <Input id="full-name" name="full-name" placeholder="Possi Gee" required />
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
@@ -90,7 +90,7 @@ export default function RegisterPage() {
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="m@example.com"
+                    placeholder="possigee@96mail.com"
                     required
                     />
                 </div>

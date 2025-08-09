@@ -15,12 +15,12 @@ import { useEffect, useState } from "react";
 // Mock data for demonstration purposes
 const quizTakers = {
     "quiz-1": [
-        { studentId: "usr-1", name: "Liam Johnson", avatar: "https://placehold.co/100x100.png", initials: "LJ", score: "8/10", date: "2024-07-28" },
+        { studentId: "usr-1", name: "Possi Gee", avatar: "https://placehold.co/100x100.png", initials: "PG", score: "8/10", date: "2024-07-28" },
         { studentId: "usr-2", name: "Olivia Smith", avatar: "https://placehold.co/100x100.png", initials: "OS", score: "10/10", date: "2024-07-28" },
         { studentId: "usr-4", name: "Emma Brown", avatar: "https://placehold.co/100x100.png", initials: "EB", score: "6/10", date: "2024-07-27" },
     ],
     "quiz-2": [
-        { studentId: "usr-1", name: "Liam Johnson", avatar: "https://placehold.co/100x100.png", initials: "LJ", score: "9/10", date: "2024-07-26" },
+        { studentId: "usr-1", name: "Possi Gee", avatar: "https://placehold.co/100x100.png", initials: "PG", score: "9/10", date: "2024-07-26" },
         { studentId: "usr-3", name: "Noah Williams", avatar: "https://placehold.co/100x100.png", initials: "NW", score: "7/10", date: "2024-07-26" },
         { studentId: "usr-5", name: "Oliver Jones", avatar: "https://placehold.co/100x100.png", initials: "OJ", score: "8/10", date: "2024-07-25" },
     ],

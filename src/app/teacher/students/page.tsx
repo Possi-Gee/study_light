@@ -11,10 +11,10 @@ import Link from "next/link";
 const students = [
     {
         id: "usr-1",
-        name: "Liam Johnson",
-        email: "liam@example.com",
+        name: "Possi Gee",
+        email: "possigee@96mail.com",
         avatar: "https://placehold.co/100x100.png",
-        initials: "LJ"
+        initials: "PG"
     },
     {
         id: "usr-2",

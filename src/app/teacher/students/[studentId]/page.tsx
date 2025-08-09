@@ -11,7 +11,7 @@ import { useParams } from "next/navigation";
 
 // Mock data for demonstration purposes. In a real app, this would come from a database.
 const studentsData = {
-    "usr-1": { id: "usr-1", name: "Liam Johnson", email: "liam@example.com", avatar: "https://placehold.co/100x100.png", initials: "LJ", quizHistory: [
+    "usr-1": { id: "usr-1", name: "Possi Gee", email: "possigee@96mail.com", avatar: "https://placehold.co/100x100.png", initials: "PG", quizHistory: [
         { quizId: "quiz-1", quiz: "Algebra Basics", score: "8/10", date: "2024-07-28" },
         { quizId: "quiz-2", quiz: "The Roman Empire", score: "9/10", date: "2024-07-26" },
         { quizId: "quiz-gen", quiz: "General Knowledge Quiz", score: "3/4", date: "2024-07-21" },
