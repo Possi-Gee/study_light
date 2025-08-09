@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle, RefreshCw, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, ArrowRight, CheckCircle, Loader2, RefreshCw, XCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { useQuizStore } from '@/lib/quiz-store';
+import { Quiz } from '@/lib/quiz-store';
+import { getQuizById } from '@/services/quizzes-service';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -19,19 +20,47 @@ export default function QuizTakingPage() {
   const params = useParams();
   const router = useRouter();
   const quizId = params.quizId as string;
-  const { getQuizById } = useQuizStore();
-  const quizData = getQuizById(quizId);
+  
+  const [quizData, setQuizData] = useState<Quiz | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<AnswersState>({});
   const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    async function fetchQuiz() {
+      if (!quizId) return;
+      setLoading(true);
+      try {
+        const fetchedQuiz = await getQuizById(quizId);
+        setQuizData(fetchedQuiz);
+      } catch (error) {
+        console.error("Failed to fetch quiz:", error);
+        setQuizData(null); // Ensure quizData is null on error
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchQuiz();
+  }, [quizId]);
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="flex justify-center items-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   if (!quizData) {
      return (
       <AppLayout>
         <div className="text-center">
           <h1 className="text-2xl font-bold">Quiz not found</h1>
-          <p className="text-muted-foreground">This quiz may have been removed.</p>
+          <p className="text-muted-foreground">This quiz may have been removed or does not exist.</p>
           <Link href="/quizzes">
             <Button variant="outline" className="mt-4">
               <ArrowLeft className="mr-2 h-4 w-4" />

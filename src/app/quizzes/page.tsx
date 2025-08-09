@@ -4,13 +4,29 @@
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuizStore } from "@/lib/quiz-store";
-import { ArrowRight, FileQuestion } from "lucide-react";
+import { Quiz } from "@/lib/quiz-store";
+import { getQuizzes } from "@/services/quizzes-service";
+import { ArrowRight, FileQuestion, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function QuizzesPage() {
-  const { quizzes } = useQuizStore();
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchQuizzes() {
+        try {
+            const fetchedQuizzes = await getQuizzes();
+            setQuizzes(fetchedQuizzes);
+        } catch (error) {
+            console.error("Failed to fetch quizzes:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+    fetchQuizzes();
+  }, []);
 
   const quizzesBySubject = useMemo(() => {
     return quizzes.reduce((acc, quiz) => {
@@ -30,7 +46,11 @@ export default function QuizzesPage() {
           <p className="text-muted-foreground">Test your knowledge and track your progress.</p>
         </div>
 
-        {subjects.length > 0 ? (
+        {loading ? (
+             <div className="flex justify-center items-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        ) : subjects.length > 0 ? (
             <div className="space-y-8">
                 {subjects.map(subject => (
                     <div key={subject}>

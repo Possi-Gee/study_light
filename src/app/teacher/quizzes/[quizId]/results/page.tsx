@@ -5,10 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useQuizStore } from "@/lib/quiz-store";
-import { ArrowLeft } from "lucide-react";
+import { Quiz } from "@/lib/quiz-store";
+import { getQuizById } from "@/services/quizzes-service";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // Mock data for demonstration purposes
 const quizTakers = {
@@ -22,15 +24,43 @@ const quizTakers = {
         { studentId: "usr-3", name: "Noah Williams", avatar: "https://placehold.co/100x100.png", initials: "NW", score: "7/10", date: "2024-07-26" },
         { studentId: "usr-5", name: "Oliver Jones", avatar: "https://placehold.co/100x100.png", initials: "OJ", score: "8/10", date: "2024-07-25" },
     ],
-    "quiz-3": []
 };
 
 export default function QuizResultsPage() {
     const params = useParams();
     const quizId = params.quizId as string;
-    const { getQuizById } = useQuizStore();
-    const quiz = getQuizById(quizId);
-    const results = quizTakers[quizId as keyof typeof quizTakers] || [];
+    
+    const [quiz, setQuiz] = useState<Quiz | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!quizId) return;
+        async function fetchQuiz() {
+            setLoading(true);
+            try {
+                const fetchedQuiz = await getQuizById(quizId);
+                setQuiz(fetchedQuiz);
+            } catch (error) {
+                console.error("Failed to fetch quiz:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchQuiz();
+    }, [quizId]);
+
+    // This part is still mocked, would require a 'submissions' collection in a real app
+    const results = quizId in quizTakers ? quizTakers[quizId as keyof typeof quizTakers] : [];
+
+    if (loading) {
+        return (
+            <AppLayout>
+                <div className="flex justify-center items-center h-64">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+            </AppLayout>
+        );
+    }
 
     if (!quiz) {
         return (

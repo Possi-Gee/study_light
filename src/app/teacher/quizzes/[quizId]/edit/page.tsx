@@ -7,36 +7,64 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useQuizStore, subjects, QuizQuestion } from "@/lib/quiz-store";
-import { ArrowLeft, BrainCircuit, PlusCircle, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { subjects, Quiz, QuizQuestion } from "@/lib/quiz-store";
+import { getQuizById, updateQuiz } from "@/services/quizzes-service";
+import { ArrowLeft, BrainCircuit, Loader2, PlusCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export default function EditQuizPage() {
     const router = useRouter();
     const params = useParams();
     const quizId = params.quizId as string;
+    const { toast } = useToast();
     
-    const { getQuizById, updateQuiz } = useQuizStore();
-    const quizData = getQuizById(quizId);
-    
+    const [quizData, setQuizData] = useState<Quiz | null>(null);
     const [title, setTitle] = useState('');
     const [subject, setSubject] = useState('');
     const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+
+    const fetchQuiz = useCallback(async () => {
+        setLoading(true);
+        try {
+            const fetchedQuiz = await getQuizById(quizId);
+            if(fetchedQuiz) {
+                setQuizData(fetchedQuiz);
+                setTitle(fetchedQuiz.title);
+                setSubject(fetchedQuiz.subject);
+                setQuestions(fetchedQuiz.questions);
+            }
+        } catch (error) {
+            console.error(error);
+            toast({ variant: "destructive", title: "Error", description: "Failed to fetch quiz data." });
+        } finally {
+            setLoading(false);
+        }
+    }, [quizId, toast]);
 
     useEffect(() => {
-        if (quizData) {
-            setTitle(quizData.title);
-            setSubject(quizData.subject);
-            setQuestions(quizData.questions);
+        if (quizId) {
+            fetchQuiz();
         }
-    }, [quizData]);
+    }, [quizId, fetchQuiz]);
 
-    const handleSaveQuiz = (e: React.FormEvent) => {
+    const handleSaveQuiz = async (e: React.FormEvent) => {
         e.preventDefault();
-        updateQuiz(quizId, { title, subject, questions });
-        router.push('/teacher/quizzes');
+        setSaving(true);
+        try {
+            await updateQuiz(quizId, { title, subject, questions });
+            toast({ title: "Success!", description: "Quiz updated successfully." });
+            router.push('/teacher/quizzes');
+        } catch(error) {
+            console.error(error);
+            toast({ variant: "destructive", title: "Error", description: "Could not update quiz." });
+        } finally {
+            setSaving(false);
+        }
     };
     
     const addQuestion = () => {
@@ -66,6 +94,17 @@ export default function EditQuizPage() {
             return q;
         }));
     };
+
+    if (loading) {
+        return (
+             <AppLayout>
+                <div className="flex justify-center items-center h-64">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+            </AppLayout>
+        );
+    }
+
 
     if (!quizData) {
         return (
@@ -129,7 +168,7 @@ export default function EditQuizPage() {
                         <CardContent className="space-y-6">
                             {questions.map((q, index) => (
                                 <div key={q.id} className="p-4 border rounded-lg relative space-y-4 bg-muted/30">
-                                    <Button variant="destructive" size="icon" className="absolute -top-3 -right-3 h-7 w-7" onClick={() => removeQuestion(q.id)}>
+                                    <Button type="button" variant="destructive" size="icon" className="absolute -top-3 -right-3 h-7 w-7" onClick={() => removeQuestion(q.id)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                     <div className="space-y-2">
@@ -176,7 +215,10 @@ export default function EditQuizPage() {
                     </Card>
                      <div className="flex justify-end gap-2">
                         <Button type="button" variant="ghost" onClick={() => router.push('/teacher/quizzes')}>Cancel</Button>
-                        <Button type="submit" size="lg">Save Changes</Button>
+                        <Button type="submit" size="lg" disabled={saving}>
+                            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            Save Changes
+                        </Button>
                     </div>
                 </form>
             </div>

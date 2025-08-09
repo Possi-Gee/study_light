@@ -7,23 +7,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useQuizStore, subjects, QuizQuestion } from "@/lib/quiz-store";
-import { ArrowLeft, BrainCircuit, PlusCircle, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { subjects, QuizQuestion } from "@/lib/quiz-store";
+import { addQuiz } from "@/services/quizzes-service";
+import { ArrowLeft, BrainCircuit, Loader2, PlusCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function CreateQuizPage() {
     const router = useRouter();
-    const { addQuiz } = useQuizStore();
+    const { toast } = useToast();
     const [title, setTitle] = useState('');
     const [subject, setSubject] = useState('');
     const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSaveQuiz = (e: React.FormEvent) => {
+    const handleSaveQuiz = async (e: React.FormEvent) => {
         e.preventDefault();
-        addQuiz({ title, subject, questions });
-        router.push('/teacher/quizzes');
+        setIsLoading(true);
+        try {
+            await addQuiz({ title, subject, questions });
+            toast({ title: "Success!", description: "Quiz created successfully." });
+            router.push('/teacher/quizzes');
+        } catch (error) {
+            console.error(error);
+            toast({ variant: "destructive", title: "Error", description: "Could not create quiz." });
+            setIsLoading(false);
+        }
     };
 
     const addQuestion = () => {
@@ -99,7 +110,7 @@ export default function CreateQuizPage() {
                         <CardContent className="space-y-6">
                              {questions.map((q, index) => (
                                 <div key={q.id} className="p-4 border rounded-lg relative space-y-4 bg-muted/30">
-                                    <Button variant="destructive" size="icon" className="absolute -top-3 -right-3 h-7 w-7" onClick={() => removeQuestion(q.id)}>
+                                    <Button type="button" variant="destructive" size="icon" className="absolute -top-3 -right-3 h-7 w-7" onClick={() => removeQuestion(q.id)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                     <div className="space-y-2">
@@ -144,7 +155,10 @@ export default function CreateQuizPage() {
                     </Card>
                      <div className="flex justify-end gap-2">
                         <Button type="button" variant="ghost" onClick={() => router.push('/teacher/quizzes')}>Cancel</Button>
-                        <Button type="submit" size="lg" disabled={!title || !subject}>Save Quiz</Button>
+                        <Button type="submit" size="lg" disabled={!title || !subject || isLoading}>
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Save Quiz
+                        </Button>
                     </div>
                 </form>
             </div>
