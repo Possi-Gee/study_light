@@ -6,11 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { getSubjects } from "@/services/notes-service";
-import { getQuizzes } from "@/services/quizzes-service";
+import { getQuizzes, QuizSubmission, getRecentSubmissions } from "@/services/quizzes-service";
 import { getStudents } from "@/services/user-service";
 import { BookMarked, RefreshCw, HelpCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
+import { RecentActivityList } from '@/components/recent-activity-list';
 
 type DashboardStats = {
     subjects: number;
@@ -21,21 +22,24 @@ type DashboardStats = {
 export default function TeacherDashboardPage() {
     const { user } = useAuth();
     const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [recentSubmissions, setRecentSubmissions] = useState<QuizSubmission[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchStats = useCallback(async () => {
+    const fetchDashboardData = useCallback(async () => {
         setLoading(true);
         try {
-            const [subjects, quizzes, students] = await Promise.all([
+            const [subjects, quizzes, students, submissions] = await Promise.all([
                 getSubjects(),
                 getQuizzes(),
                 getStudents(),
+                getRecentSubmissions(5),
             ]);
             setStats({
                 subjects: subjects.length,
                 quizzes: quizzes.length,
                 students: students.length,
             });
+            setRecentSubmissions(submissions);
         } catch (error) {
             console.error("Failed to fetch dashboard stats:", error);
         } finally {
@@ -44,12 +48,20 @@ export default function TeacherDashboardPage() {
     }, []);
 
     useEffect(() => {
-        fetchStats();
-    }, [fetchStats]);
+        fetchDashboardData();
+    }, [fetchDashboardData]);
 
     const handleRefresh = () => {
-        fetchStats();
+        fetchDashboardData();
     }
+    
+    const formattedSubmissions = recentSubmissions.map(s => ({
+        id: s.id,
+        title: s.studentName,
+        subtitle: `scored ${s.score}/${s.totalQuestions} on "${s.quizTitle}"`,
+        timestamp: s.completedAt.toDate(),
+        link: `/teacher/students/${s.studentId}`
+    }));
 
   return (
     <AppLayout>
@@ -117,6 +129,24 @@ export default function TeacherDashboardPage() {
                 </CardContent>
             </Card>
         </div>
+         <Card className="lg:col-span-3">
+            <CardHeader>
+                <CardTitle>Recent Student Activity</CardTitle>
+                <CardDescription>The latest quiz submissions from your students.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 {loading ? (
+                    <div className="space-y-4">
+                        {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                    </div>
+                ) : (
+                    <RecentActivityList 
+                        items={formattedSubmissions} 
+                        emptyStateText="No students have taken a quiz yet."
+                    />
+                )}
+            </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );

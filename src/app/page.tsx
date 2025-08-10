@@ -4,12 +4,45 @@
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
+import { Quiz } from "@/lib/quiz-store";
+import { getQuizzes } from "@/services/quizzes-service";
 import { ArrowRight, BookOpen, CalendarCheck, Puzzle } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { RecentActivityList } from "@/components/recent-activity-list";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [recentQuizzes, setRecentQuizzes] = useState<Quiz[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRecentQuizzes() {
+        setLoading(true);
+        try {
+            const allQuizzes = await getQuizzes();
+            // Assuming getQuizzes returns them sorted by createdAt descending
+            setRecentQuizzes(allQuizzes.slice(0, 5));
+        } catch (error) {
+            console.error("Failed to fetch recent quizzes:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
+    fetchRecentQuizzes();
+  }, []);
+
+  const formattedQuizzes = recentQuizzes.map(q => ({
+    id: q.id,
+    title: q.title,
+    subtitle: `A new quiz in ${q.subject}`,
+    // @ts-ignore - Firestore timestamp vs Date
+    timestamp: q.createdAt?.toDate() || new Date(),
+    link: `/quizzes/${q.id}`
+  }));
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
@@ -67,6 +100,24 @@ export default function DashboardPage() {
                 </CardContent>
             </Card>
         </div>
+         <Card className="lg:col-span-3">
+            <CardHeader>
+                <CardTitle>New Quizzes</CardTitle>
+                <CardDescription>Check out the latest quizzes added by your teachers.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {loading ? (
+                     <div className="space-y-4">
+                        {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                    </div>
+                ) : (
+                    <RecentActivityList 
+                        items={formattedQuizzes} 
+                        emptyStateText="No new quizzes have been added recently."
+                    />
+                )}
+            </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );

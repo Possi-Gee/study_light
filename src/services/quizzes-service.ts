@@ -1,4 +1,6 @@
 
+'use server';
+
 import { db } from "@/lib/firebase";
 import { Quiz, QuizQuestion } from "@/lib/quiz-store";
 import {
@@ -14,7 +16,8 @@ import {
     query,
     where,
     Timestamp,
-    collectionGroup
+    collectionGroup,
+    limit
 } from "firebase/firestore";
 
 const quizzesCollection = collection(db, 'quizzes');
@@ -24,7 +27,7 @@ export async function getQuizzes(): Promise<Quiz[]> {
     const q = query(quizzesCollection, orderBy("createdAt", "desc"));
     const quizSnapshot = await getDocs(q);
     return quizSnapshot.docs.map(doc => ({
-        ...(doc.data() as Omit<Quiz, 'id'>),
+        ...(doc.data() as Omit<Quiz, 'id' | 'createdAt'>),
         id: doc.id
     }));
 }
@@ -33,15 +36,20 @@ export async function getQuizById(id: string): Promise<Quiz | null> {
     const quizDoc = doc(db, 'quizzes', id);
     const quizSnapshot = await getDoc(quizDoc);
     if (quizSnapshot.exists()) {
+        const data = quizSnapshot.data();
         return {
-            ...(quizSnapshot.data() as Omit<Quiz, 'id'>),
-            id: quizSnapshot.id
+            id: quizSnapshot.id,
+            title: data.title,
+            subject: data.subject,
+            questions: data.questions,
+            timer: data.timer,
+            createdAt: data.createdAt // ensure createdAt is retrieved
         };
     }
     return null;
 }
 
-export async function addQuiz(quizData: Omit<Quiz, 'id'>): Promise<string> {
+export async function addQuiz(quizData: Omit<Quiz, 'id' | 'createdAt'>): Promise<string> {
     const newQuizRef = await addDoc(quizzesCollection, {
         ...quizData,
         createdAt: serverTimestamp()
@@ -103,5 +111,18 @@ export async function getSubmissionsForQuiz(quizId: string): Promise<QuizSubmiss
     return submissionSnapshot.docs.map(doc => ({
         ...(doc.data() as Omit<QuizSubmission, 'id'>),
         id: doc.id
+    }));
+}
+
+export async function getRecentSubmissions(count: number): Promise<QuizSubmission[]> {
+    const q = query(
+        collection(db, 'submissions'), 
+        orderBy("completedAt", "desc"), 
+        limit(count)
+    );
+    const submissionSnapshot = await getDocs(q);
+    return submissionSnapshot.docs.map(doc => ({
+        ...(doc.data() as Omit<QuizSubmission, 'id'>),
+        id: doc.id,
     }));
 }
