@@ -3,61 +3,66 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Helper function to check if a user has the 'teacher' role.
-    function isTeacher() {
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
-    }
     
-    // Helper function to check if a user is authenticated.
-    function isSignedIn() {
+    // Helper function to check if a user is authenticated
+    function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Users collection:
-    // - Allow users to read their own profile.
-    // - Allow users to create their own profile document.
-    // - Teachers can read any user profile.
-    match /users/{userId} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isTeacher());
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update: if isSignedIn() && request.auth.uid == userId;
-    }
-
-    // Announcements collection:
-    // - Teachers can create, update, and delete announcements.
-    // - Any signed-in user can read announcements.
-    match /announcements/{announcementId} {
-      allow read: if isSignedIn();
-      allow write: if isTeacher();
-    }
-
-    // Subjects collection (and their notes subcollections):
-    // - Teachers can manage all subjects and notes.
-    // - Any signed-in user can read subjects and notes.
-    match /subjects/{subjectId}/{document=**} {
-        allow read: if isSignedIn();
-        allow write: if isTeacher();
-    }
-
-    // Quizzes collection:
-    // - Teachers can manage all quizzes.
-    // - Any signed-in user can read quizzes.
-    match /quizzes/{quizId} {
-      allow read: if isSignedIn();
-      allow write: if isTeacher();
+    // Helper function to check if the requesting user is a teacher
+    function isTeacher() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
     }
     
-    // Submissions collection:
-    // - Users can create their own submissions.
-    // - Users can read their own submissions.
-    // - Teachers can read any submission.
+    // Rules for user profiles
+    match /users/{userId} {
+      // Any authenticated user can create their own user document (for registration)
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      // Users can read and update their own profile
+      allow get, update: if isAuthenticated() && request.auth.uid == userId;
+      // Teachers can read any user's profile
+      allow list: if isTeacher();
+    }
+
+    // Rules for subjects and the notes within them
+    match /subjects/{subjectId} {
+      // Teachers can create, update, and delete subjects
+      allow write: if isTeacher();
+      // Any authenticated user can read subjects
+      allow get, list: if isAuthenticated();
+    }
+    
+    match /subjects/{subjectId}/notes/{noteId} {
+        // Teachers can create, update, and delete notes
+        allow write: if isTeacher();
+        // Any authenticated user can read notes
+        allow get, list: if isAuthenticated();
+    }
+
+    // Rules for quizzes
+    match /quizzes/{quizId} {
+        // Teachers can create, update, and delete quizzes
+        allow write: if isTeacher();
+        // Any authenticated user can read quizzes
+        allow get, list: if isAuthenticated();
+    }
+
+    // Rules for quiz submissions
     match /submissions/{submissionId} {
-        allow create: if isSignedIn();
-        allow read: if isSignedIn() && (isTeacher() || request.auth.uid == resource.data.studentId);
-        // Disallow updates and deletes for data integrity
-        allow update, delete: if false;
+      // Students can create their own submissions
+      allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
+      // Teachers can read any submission
+      allow get, list: if isTeacher();
+      // Students can read their own submissions
+      allow get: if isAuthenticated() && get(/databases/$(database)/documents/submissions/$(submissionId)).data.studentId == request.auth.uid;
+    }
+    
+    // Rules for announcements
+    match /announcements/{announcementId} {
+        // Teachers can create and delete announcements
+        allow create, delete: if isTeacher();
+        // Any authenticated user can read announcements
+        allow get, list: if isAuthenticated();
     }
   }
 }
