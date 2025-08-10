@@ -3,49 +3,10 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper function to check if a user is a teacher
-    function isTeacher() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
-    }
-
-    // Users can create their own profile upon signup and manage their own data.
-    // All authenticated users can view profiles.
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth.uid == userId;
-      allow update: if request.auth.uid == userId;
-    }
-
-    // --- Teacher-Only Content ---
-    // Subjects and their subcollections (notes)
-    match /subjects/{subjectId} {
-      allow read: if request.auth != null;
-      allow write: if isTeacher();
-
-      match /notes/{noteId} {
-        allow read: if request.auth != null;
-        allow write: if isTeacher();
-      }
-    }
-    
-    // Quizzes
-    match /quizzes/{quizId} {
-        allow read: if request.auth != null;
-        allow write: if isTeacher();
-    }
-    
-    // Announcements
-    match /announcements/{announcementId} {
-      allow read: if request.auth != null;
-      allow write: if isTeacher();
-    }
-    
-    // --- Student Submissions ---
-    // Students can create their own submissions. Teachers can read all submissions.
-    match /submissions/{submissionId} {
-      allow read: if isTeacher();
-      allow create: if request.auth != null;
+    // Default rule: Allow read/write access to authenticated users.
+    // This is a temporary, permissive rule to unblock development.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
