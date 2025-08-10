@@ -110,7 +110,7 @@ export default function TeacherNotesPage() {
         }
     }
 
-    const handleDeleteNoteFromDialog = async (subjectId: string, noteId: string) => {
+    const handleDeleteNote = async (subjectId: string, noteId: string) => {
        if(confirm("Are you sure you want to delete this note?")){
             try {
                 await deleteNote(subjectId, noteId);
@@ -220,7 +220,7 @@ export default function TeacherNotesPage() {
                                                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openNoteDialog(subject.id, note)}>
                                                                 <Edit className="h-4 w-4"/>
                                                             </Button>
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteNoteFromDialog(subject.id, note.id)}>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDeleteNote(subject.id, note.id)}>
                                                                 <Trash2 className="h-4 w-4"/>
                                                             </Button>
                                                         </div>
