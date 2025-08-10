@@ -16,4 +16,5 @@ export type Quiz = {
     title: string;
     subject: string;
     questions: QuizQuestion[];
+    timer?: number; // Duration in minutes
 };

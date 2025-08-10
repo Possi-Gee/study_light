@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Quiz } from "@/lib/quiz-store";
 import { deleteQuiz, getQuizzes } from "@/services/quizzes-service";
-import { FileQuestion, PlusCircle, Trash2, Edit, BarChart, Loader2 } from "lucide-react";
+import { FileQuestion, PlusCircle, Trash2, Edit, BarChart, Loader2, Timer } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -59,7 +59,7 @@ export default function TeacherQuizzesPage() {
 
     return (
         <AppLayout>
-            <AlertDialog>
+            <AlertDialog open={!!deletingQuizId} onOpenChange={(open) => !open && setDeletingQuizId(null)}>
                 <div className="space-y-8">
                     <div className="flex justify-between items-start">
                         <div>
@@ -86,7 +86,15 @@ export default function TeacherQuizzesPage() {
                                             <CardTitle className="leading-tight">{quiz.title}</CardTitle>
                                             <FileQuestion className="h-6 w-6 text-primary shrink-0 ml-4"/>
                                         </div>
-                                        <CardDescription>{quiz.subject} - {quiz.questions.length} question(s)</CardDescription>
+                                        <div className="text-sm text-muted-foreground flex items-center gap-4">
+                                            <span>{quiz.subject} - {quiz.questions.length} question(s)</span>
+                                            {quiz.timer && (
+                                                <div className="flex items-center gap-1">
+                                                    <Timer className="h-4 w-4"/>
+                                                    <span>{quiz.timer} min</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </CardHeader>
                                     <CardContent className="flex-grow">
                                     </CardContent>

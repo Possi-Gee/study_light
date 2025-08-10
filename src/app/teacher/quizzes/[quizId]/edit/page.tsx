@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Quiz, QuizQuestion } from "@/lib/quiz-store";
 import { getQuizById, updateQuiz } from "@/services/quizzes-service";
-import { ArrowLeft, BrainCircuit, Loader2, PlusCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, BrainCircuit, Loader2, PlusCircle, Timer, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
@@ -26,6 +26,7 @@ export default function EditQuizPage() {
     const [quizData, setQuizData] = useState<Quiz | null>(null);
     const [title, setTitle] = useState('');
     const [subject, setSubject] = useState('');
+    const [timer, setTimer] = useState<number | undefined>(undefined);
     const [questions, setQuestions] = useState<QuizQuestion[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -54,6 +55,7 @@ export default function EditQuizPage() {
                 setTitle(fetchedQuiz.title);
                 setSubject(fetchedQuiz.subject);
                 setQuestions(fetchedQuiz.questions);
+                setTimer(fetchedQuiz.timer);
             }
         } catch (error) {
             console.error(error);
@@ -73,7 +75,7 @@ export default function EditQuizPage() {
         e.preventDefault();
         setSaving(true);
         try {
-            await updateQuiz(quizId, { title, subject, questions });
+            await updateQuiz(quizId, { title, subject, questions, timer });
             toast({ title: "Success!", description: "Quiz updated successfully." });
             router.push('/teacher/quizzes');
         } catch(error) {
@@ -165,9 +167,9 @@ export default function EditQuizPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Quiz Details</CardTitle>
-                            <CardDescription>Update the title and subject for your quiz.</CardDescription>
+                            <CardDescription>Update the title, subject, and timer for your quiz.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="grid gap-4 md:grid-cols-2">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Quiz Title</Label>
                                 <Input id="title" name="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -182,6 +184,21 @@ export default function EditQuizPage() {
                                         {subjects.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="timer">Timer (minutes)</Label>
+                                <div className="relative">
+                                    <Timer className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"/>
+                                    <Input 
+                                        id="timer" 
+                                        name="timer" 
+                                        type="number" 
+                                        placeholder="Optional: e.g., 30" 
+                                        value={timer === undefined ? '' : timer} 
+                                        onChange={(e) => setTimer(e.target.value ? parseInt(e.target.value, 10) : undefined)} 
+                                        className="pl-10"
+                                    />
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
