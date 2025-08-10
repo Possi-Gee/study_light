@@ -233,7 +233,7 @@ export default function TeacherNotesPage() {
                                                             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{note.content}</p>
                                                         </div>
                                                         <div className="flex gap-2 shrink-0 ml-4">
-                                                            <Link href={`/notes/${note.id}`} passHref>
+                                                            <Link href={`/notes/${note.id}?subjectId=${subject.id}`} passHref>
                                                                 <Button asChild variant="ghost" size="icon" className="h-8 w-8">
                                                                     <Eye className="h-4 w-4"/>
                                                                 </Button>

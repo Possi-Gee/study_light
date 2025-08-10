@@ -11,9 +11,7 @@ import {
     writeBatch,
     updateDoc,
     query,
-    collectionGroup,
     getDoc,
-    where
 } from "firebase/firestore";
 
 
@@ -73,38 +71,19 @@ export async function getNotesForSubject(subjectId: string): Promise<Note[]> {
     return notes;
 }
 
-export async function getNoteById(noteId: string): Promise<Note | null> {
-    const q = query(collectionGroup(db, 'notes'), where('__name__', '==', noteId));
-    const querySnapshot = await getDocs(q);
+export async function getNoteById(subjectId: string, noteId: string): Promise<Note | null> {
+    if (!subjectId || !noteId) return null;
+    const noteDocRef = doc(db, `subjects/${subjectId}/notes`, noteId);
+    const docSnap = await getDoc(noteDocRef);
 
-    if (!querySnapshot.empty) {
-        const noteDoc = querySnapshot.docs[0];
-        const notePath = noteDoc.ref.path;
-
-        // Now fetch the document directly using its full path
-        const docRef = doc(db, notePath);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-             return {
-                ...(docSnap.data() as Omit<Note, 'id'>),
-                id: docSnap.id,
-            };
-        }
-    }
-   
-    // Fallback for cases where noteId might be a partial path for some reason.
-    // This is less efficient but provides a backup.
-    const allNotesSnapshot = await getDocs(collectionGroup(db, 'notes'));
-    const foundDoc = allNotesSnapshot.docs.find(d => d.id === noteId);
-
-    if (foundDoc) {
-         return {
-            ...(foundDoc.data() as Omit<Note, 'id'>),
-            id: foundDoc.id,
+    if (docSnap.exists()) {
+        return {
+            ...(docSnap.data() as Omit<Note, 'id'>),
+            id: docSnap.id,
         };
     }
-
+    
+    console.error(`Note not found: subjectId=${subjectId}, noteId=${noteId}`);
     return null;
 }
 

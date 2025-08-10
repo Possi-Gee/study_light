@@ -8,7 +8,7 @@ import { Note } from "@/lib/note-store";
 import { getNoteById } from "@/services/notes-service";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 // A simple component to parse and render the note content
@@ -32,16 +32,19 @@ const NoteContent = ({ content }: { content: string }) => {
 
 export default function NoteViewerPage() {
     const params = useParams();
+    const searchParams = useSearchParams();
     const noteId = params.noteId as string;
+    const subjectId = searchParams.get('subjectId');
+
     const [note, setNote] = useState<Note | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (noteId) {
+        if (noteId && subjectId) {
             const fetchNote = async () => {
                 setLoading(true);
                 try {
-                    const fetchedNote = await getNoteById(noteId);
+                    const fetchedNote = await getNoteById(subjectId, noteId);
                     setNote(fetchedNote);
                 } catch (error) {
                     console.error("Failed to fetch note:", error);
@@ -51,8 +54,11 @@ export default function NoteViewerPage() {
                 }
             };
             fetchNote();
+        } else if (!subjectId) {
+            console.error("Subject ID is missing from URL");
+            setLoading(false);
         }
-    }, [noteId]);
+    }, [noteId, subjectId]);
 
     return (
         <AppLayout>
@@ -79,7 +85,7 @@ export default function NoteViewerPage() {
                 ) : (
                     <div className="text-center">
                         <h1 className="text-2xl font-bold">Note not found</h1>
-                        <p className="text-muted-foreground">This note may have been removed or does not exist.</p>
+                        <p className="text-muted-foreground">This note may have been removed or the link is incomplete.</p>
                          <Link href="/notes">
                             <Button variant="outline" className="mt-4">
                                 <ArrowLeft className="mr-2 h-4 w-4" />

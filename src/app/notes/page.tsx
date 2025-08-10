@@ -56,7 +56,7 @@ export default function NotesPage() {
                                 <AccordionContent>
                                     <div className="pl-9 space-y-2">
                                     {subject.notes.map(note => (
-                                        <Link href={`/notes/${note.id}`} key={note.id} className="block p-3 rounded-md border bg-muted/50 hover:bg-muted/80 transition-colors">
+                                        <Link href={`/notes/${note.id}?subjectId=${subject.id}`} key={note.id} className="block p-3 rounded-md border bg-muted/50 hover:bg-muted/80 transition-colors">
                                             <div className="flex justify-between items-center">
                                                 <h4 className="font-semibold">{note.title}</h4>
                                                 <ArrowRight className="h-4 w-4 text-muted-foreground"/>
