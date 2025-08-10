@@ -1,9 +1,50 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+
+    // Helper function to check if a user is a teacher
+    function isTeacher() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
+    }
+
+    // Users can create their own profile, and can only update their own profile.
+    // All authenticated users can view profiles (needed for teacher student lists).
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth.uid == userId;
+      allow update: if request.auth.uid == userId;
+    }
+
+    // Teachers can create/update/delete subjects. All authenticated users can read.
+    match /subjects/{subjectId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && isTeacher();
+
+        // Teachers can create/update/delete notes. All authenticated users can read.
+        match /notes/{noteId} {
+            allow read: if request.auth != null;
+            allow write: if request.auth != null && isTeacher();
+        }
+    }
+    
+    // Teachers can create/update/delete quizzes. All authenticated users can read.
+    match /quizzes/{quizId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isTeacher();
+    }
+    
+    // Teachers can create/delete announcements. All authenticated users can read.
+    match /announcements/{announcementId} {
+        allow read: if request.auth != null;
+        allow create, delete: if request.auth != null && isTeacher();
+    }
+
+    // Students can create their own submissions. Teachers can read all submissions.
+    match /submissions/{submissionId} {
+      allow read: if request.auth != null && isTeacher();
+      allow create: if request.auth != null && request.resource.data.studentId == request.auth.uid;
     }
   }
 }
