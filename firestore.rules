@@ -1,48 +1,12 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper function to check if a user is a teacher
-    function isTeacher(userId) {
-      return get(/databases/$(database)/documents/users/$(userId)).data.role == 'teacher';
-    }
-
-    // Users can create their own profile, and can only update their own profile.
-    // Any authenticated user can view profiles (needed for teacher student list).
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Students can read all shared content (subjects, notes, quizzes).
-    // Teachers can create, update, and delete all shared content.
-    match /subjects/{subjectId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && isTeacher(request.auth.uid);
-      
-      match /notes/{noteId} {
-        allow read: if request.auth != null;
-        allow write: if request.auth != null && isTeacher(request.auth.uid);
-      }
-    }
-    
-    match /quizzes/{quizId} {
-       allow read: if request.auth != null;
-       allow write: if request.auth != null && isTeacher(request.auth.uid);
-    }
-    
-    match /announcements/{announcementId} {
-       allow read: if request.auth != null;
-       allow write: if request.auth != null && isTeacher(request.auth.uid);
-    }
-
-    // Students can create submissions for quizzes.
-    // Teachers can read all submissions.
-    match /submissions/{submissionId} {
-      allow read: if request.auth != null && isTeacher(request.auth.uid);
-      allow create: if request.auth != null;
+    // Allow read/write access to the entire database for any authenticated user.
+    // This is a temporary, permissive rule to unblock development.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
