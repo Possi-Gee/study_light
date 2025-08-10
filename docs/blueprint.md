@@ -1,4 +1,4 @@
-# **App Name**: ScholarSage
+# **App Name**: StudyLight 
 
 ## Core Features:
 
