@@ -14,6 +14,7 @@ import { addSubject, deleteSubject, addNote, updateNote, deleteNote, getSubjects
 import { Eye, PlusCircle, Trash2, Edit, Loader2, BrainCircuit } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { GenerateNoteDialog } from "@/components/generate-note-dialog";
+import Link from "next/link";
 
 export default function TeacherNotesPage() {
     const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -22,11 +23,9 @@ export default function TeacherNotesPage() {
 
     const [isSubjectDialogOpen, setIsSubjectDialogOpen] = useState(false);
     const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
-    const [isViewNoteDialogOpen, setIsViewNoteDialogOpen] = useState(false);
     const [isAiNoteDialogOpen, setIsAiNoteDialogOpen] = useState(false);
 
     const [editingNote, setEditingNote] = useState<Note | null>(null);
-    const [viewingNote, setViewingNote] = useState<Note | null>(null);
     const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null);
 
     const fetchSubjects = useCallback(async () => {
@@ -83,11 +82,6 @@ export default function TeacherNotesPage() {
     const openAiNoteDialog = (subjectId: string) => {
         setActiveSubjectId(subjectId);
         setIsAiNoteDialogOpen(true);
-    }
-
-    const openViewNoteDialog = (note: Note) => {
-        setViewingNote(note);
-        setIsViewNoteDialogOpen(true);
     }
     
     const handleSaveNote = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -218,9 +212,11 @@ export default function TeacherNotesPage() {
                                                             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{note.content}</p>
                                                         </div>
                                                         <div className="flex gap-2 shrink-0 ml-4">
-                                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openViewNoteDialog(note)}>
-                                                                <Eye className="h-4 w-4"/>
-                                                            </Button>
+                                                            <Link href={`/notes/${note.id}`} passHref>
+                                                                <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                                                                    <Eye className="h-4 w-4"/>
+                                                                </Button>
+                                                            </Link>
                                                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openNoteDialog(subject.id, note)}>
                                                                 <Edit className="h-4 w-4"/>
                                                             </Button>
@@ -273,25 +269,6 @@ export default function TeacherNotesPage() {
                 </DialogContent>
             </Dialog>
 
-             {/* View Note Dialog */}
-            <Dialog open={isViewNoteDialogOpen} onOpenChange={setIsViewNoteDialogOpen}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>{viewingNote?.title}</DialogTitle>
-                        <DialogDescription>
-                            Read the full content of the note below.
-                        </DialogDescription>
-                    </DialogHeader>
-                     <div className="py-4 prose dark:prose-invert max-h-[60vh] overflow-y-auto">
-                        <p>{viewingNote?.content}</p>
-                     </div>
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button>Close</Button>
-                        </DialogClose>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </AppLayout>
     );
 }

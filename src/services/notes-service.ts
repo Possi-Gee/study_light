@@ -11,7 +11,9 @@ import {
     updateDoc,
     query,
     collectionGroup,
-    getDoc
+    getDoc,
+    where,
+    limit
 } from "firebase/firestore";
 
 
@@ -70,6 +72,30 @@ export async function getNotesForSubject(subjectId: string): Promise<Note[]> {
     }));
     return notes;
 }
+
+export async function getNoteById(noteId: string): Promise<Note | null> {
+    const notesQuery = query(
+        collectionGroup(db, 'notes'), 
+        where('__name__', '==', `subjects/${noteId.split('/subjects/')[1]}`), 
+        limit(1)
+    );
+    
+    // A more robust way to find a note without knowing its subject
+    const allNotesQuery = query(collectionGroup(db, 'notes'));
+    const querySnapshot = await getDocs(allNotesQuery);
+
+    for (const doc of querySnapshot.docs) {
+        if (doc.id === noteId) {
+            return {
+                ...(doc.data() as Omit<Note, 'id'>),
+                id: doc.id,
+            };
+        }
+    }
+
+    return null;
+}
+
 
 export async function addNote(subjectId: string, noteData: Omit<Note, 'id'>): Promise<Note> {
     const notesCollection = collection(db, `subjects/${subjectId}/notes`);

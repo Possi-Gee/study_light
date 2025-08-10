@@ -5,7 +5,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Card, CardContent } from "@/components/ui/card";
 import { getIconForSubject, Subject } from "@/lib/note-store";
 import { getSubjects } from "@/services/notes-service";
-import { Loader2 } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 
@@ -55,10 +56,13 @@ export default function NotesPage() {
                                 <AccordionContent>
                                     <div className="pl-9 space-y-2">
                                     {subject.notes.map(note => (
-                                        <div key={note.id} className="p-3 rounded-md border bg-muted/50">
-                                            <h4 className="font-semibold">{note.title}</h4>
-                                            <p className="text-sm text-muted-foreground">{note.content}</p>
-                                        </div>
+                                        <Link href={`/notes/${note.id}`} key={note.id} className="block p-3 rounded-md border bg-muted/50 hover:bg-muted/80 transition-colors">
+                                            <div className="flex justify-between items-center">
+                                                <h4 className="font-semibold">{note.title}</h4>
+                                                <ArrowRight className="h-4 w-4 text-muted-foreground"/>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{note.content}</p>
+                                        </Link>
                                     ))}
                                     {subject.notes.length === 0 && (
                                         <p className="text-sm text-muted-foreground text-center py-4">No notes available for this subject yet.</p>
