@@ -97,6 +97,11 @@ export default function TeacherQuizzesPage() {
                                         </div>
                                     </CardHeader>
                                     <CardContent className="flex-grow">
+                                        <Link href={`/teacher/quizzes/${quiz.id}/results`}>
+                                            <Button variant="outline" className="w-full">
+                                                <BarChart className="mr-2 h-4 w-4"/> View Results
+                                            </Button>
+                                        </Link>
                                     </CardContent>
                                     <CardFooter className="flex justify-between items-center mt-auto">
                                         <div className="flex gap-2">
