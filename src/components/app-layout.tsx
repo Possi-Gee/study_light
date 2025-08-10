@@ -64,7 +64,7 @@ const teacherNavItems = [
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, loading: isAuthLoading } = useAuth();
   const { role, isLoading: isRoleLoading } = useRole();
   const router = useRouter();
   const { toast } = useToast();
@@ -79,7 +79,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
     }
   }
 
-  if (isRoleLoading) {
+  // Combined loading check
+  if (isAuthLoading || isRoleLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-12 h-12 animate-spin text-primary" />

@@ -11,33 +11,48 @@ export function useRole() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchRole() {
-      if (authLoading) {
-        return; // Wait for auth to finish loading
-      }
-      if (!user) {
-        setRole(null);
-        setIsLoading(false);
-        return;
-      }
-
+    // If auth is still loading, the role is also loading.
+    if (authLoading) {
       setIsLoading(true);
+      return;
+    }
+
+    // If there is no user, we are done loading and there is no role.
+    if (!user) {
+      setRole(null);
+      setIsLoading(false);
+      return;
+    }
+
+    // If there is a user, fetch their role.
+    let isMounted = true;
+    async function fetchRole() {
       try {
         const userProfile = await getUserById(user.uid);
-        if (userProfile) {
-          setRole(userProfile.role);
-        } else {
-          setRole(null);
+        if (isMounted) {
+            if (userProfile) {
+              setRole(userProfile.role);
+            } else {
+              setRole(null);
+            }
         }
       } catch (error) {
         console.error("Failed to fetch user role:", error);
-        setRole(null);
+        if (isMounted) {
+            setRole(null);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+            setIsLoading(false);
+        }
       }
     }
 
     fetchRole();
+    
+    return () => {
+        isMounted = false;
+    }
   }, [user, authLoading]);
 
   return { role, isLoading };
