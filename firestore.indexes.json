@@ -30,11 +30,11 @@
       ]
     },
     {
-      "collectionGroup": "announcements",
+      "collectionGroup": "submissions",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "createdAt",
+          "fieldPath": "completedAt",
           "order": "DESCENDING"
         }
       ]

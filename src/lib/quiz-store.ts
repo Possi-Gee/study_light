@@ -1,6 +1,8 @@
 
 'use client';
 
+import { Timestamp } from "firebase/firestore";
+
 // In a real application, this data would be fetched from a database.
 // We use a Zustand store to simulate a persistent data source for the prototype.
 
@@ -17,4 +19,5 @@ export type Quiz = {
     subject: string;
     questions: QuizQuestion[];
     timer?: number; // Duration in minutes
+    createdAt: Timestamp;
 };

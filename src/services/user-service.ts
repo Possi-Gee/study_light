@@ -1,10 +1,11 @@
 
 
+'use server';
 import { auth, db, storage } from "@/lib/firebase";
 import { useAuthStore } from "@/hooks/use-auth-store";
 import { User, updateProfile } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { doc, setDoc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, getDocs, query, where, updateDoc } from "firebase/firestore";
 
 export type UserProfile = {
   uid: string;
@@ -49,14 +50,17 @@ export async function uploadAvatarAndUpdateProfile(file: File) {
     const snapshot = await uploadBytes(storageRef, file);
     const photoURL = await getDownloadURL(snapshot.ref);
 
-    // 2. Update the user's profile with the new photoURL
+    // 2. Update the user's profile in Auth
     await updateProfile(currentUser, { photoURL });
     
-    // 3. Force a reload of the user from Firebase to get the latest data
+    // 3. Update the user's profile in Firestore
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    await updateDoc(userDocRef, { photoURL });
+    
+    // 4. Force a reload of the user from Firebase to get the latest data
     await currentUser.reload();
     
-    // 4. Set the latest user object in our store to trigger UI updates
-    // This is important to make sure the UI reflects the change immediately
+    // 5. Set the latest user object in our store to trigger UI updates
     const refreshedUser = auth.currentUser;
     if (refreshedUser) {
         useAuthStore.getState().setUser(refreshedUser);
@@ -64,10 +68,8 @@ export async function uploadAvatarAndUpdateProfile(file: File) {
 
   } catch (error) {
     console.error("Error uploading avatar and updating profile:", error);
-    // Re-throw the error so the component can catch it and show a toast
     throw error;
   } finally {
-    // 5. ALWAYS ensure the updating state is reset
     useAuthStore.getState().setUpdating(false);
   }
 }
@@ -83,9 +85,17 @@ export async function updateUserProfile(
   useAuthStore.getState().setUpdating(true);
 
   try {
+    // Update Auth profile
     await updateProfile(currentUser, updates);
+    
+    // Update Firestore profile
+    if (updates.displayName) {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userDocRef, { name: updates.displayName });
+    }
+
     await currentUser.reload();
-     const refreshedUser = auth.currentUser;
+    const refreshedUser = auth.currentUser;
     if (refreshedUser) {
         useAuthStore.getState().setUser(refreshedUser);
     }
