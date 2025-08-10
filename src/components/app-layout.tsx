@@ -131,8 +131,10 @@ export function AppLayout({ children }: { children: ReactNode }) {
           console.error("Failed to fetch announcements:", error);
       }
     }
-    fetchAnnouncements();
-  }, []);
+    if (role === 'student') {
+        fetchAnnouncements();
+    }
+  }, [role]);
   
   const handleOpenAnnouncementCenter = () => {
       setIsAnnouncementCenterOpen(true);
@@ -220,11 +222,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <header className="flex h-14 items-center justify-between border-b bg-background px-4 sm:justify-end gap-4">
           <SidebarTrigger className="sm:hidden" />
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="relative" onClick={handleOpenAnnouncementCenter}>
-              <Bell className="h-5 w-5"/>
-              {hasUnread && <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-destructive" />}
-              <span className="sr-only">Open announcements</span>
-            </Button>
+             {!isTeacher && (
+                <Button variant="ghost" size="icon" className="relative" onClick={handleOpenAnnouncementCenter}>
+                    <Bell className="h-5 w-5"/>
+                    {hasUnread && <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-destructive" />}
+                    <span className="sr-only">Open announcements</span>
+                </Button>
+            )}
             <UserNav name={userName} email={userEmail} profileUrl={profileUrl} settingsUrl={settingsUrl} onLogout={handleLogout} />
           </div>
         </header>
