@@ -1,4 +1,5 @@
 
+
 import { db } from "@/lib/firebase";
 import { Note, Subject } from "@/lib/note-store";
 import { 
@@ -12,8 +13,7 @@ import {
     query,
     collectionGroup,
     getDoc,
-    where,
-    limit
+    where
 } from "firebase/firestore";
 
 
@@ -74,17 +74,19 @@ export async function getNotesForSubject(subjectId: string): Promise<Note[]> {
 }
 
 export async function getNoteById(noteId: string): Promise<Note | null> {
-    // A more robust way to find a note without knowing its subject
-    const allNotesQuery = query(collectionGroup(db, 'notes'));
-    const querySnapshot = await getDocs(allNotesQuery);
+    // This query finds a note by its ID across all subjects.
+    const notesQuery = query(collectionGroup(db, 'notes'), where('__name__', '==', `subjects/${noteId.split('/')[1]}/notes/${noteId.split('/')[3]}`));
+    
+    // A more direct path if we construct the full path, but this is more complex client-side.
+    // For now, querying the collection group and finding the doc is robust.
+    const querySnapshot = await getDocs(query(collectionGroup(db, 'notes')));
+    const noteDoc = querySnapshot.docs.find(doc => doc.id === noteId);
 
-    for (const doc of querySnapshot.docs) {
-        if (doc.id === noteId) {
-            return {
-                ...(doc.data() as Omit<Note, 'id'>),
-                id: doc.id,
-            };
-        }
+    if (noteDoc) {
+        return {
+            ...(noteDoc.data() as Omit<Note, 'id'>),
+            id: noteDoc.id,
+        };
     }
 
     return null;
@@ -109,3 +111,4 @@ export async function deleteNote(subjectId: string, noteId: string): Promise<voi
     const noteDoc = doc(db, `subjects/${subjectId}/notes`, noteId);
     await deleteDoc(noteDoc);
 }
+
