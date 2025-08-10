@@ -1,37 +1,11 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Allow users to read their own data and for teachers to read all user profiles
-    match /users/{userId} {
-      allow read, update: if request.auth.uid == userId;
-      allow list: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
-    }
-
-    // Allow teachers to manage subjects
-    match /subjects/{subjectId} {
-      allow read, list, create, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
-    }
-
-    // Allow teachers to manage notes within subjects, and students to read them
-    match /subjects/{subjectId}/notes/{noteId} {
-      allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
-      // Any authenticated user can read notes. This also covers the collectionGroup query for getNoteById
-      allow get, list: if request.auth != null; 
-    }
-    
-    // Allow teachers to manage quizzes
-    match /quizzes/{quizId} {
-        allow read, list: if request.auth != null;
-        allow create, update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
-    }
-    
-    // Allow students to create submissions, and teachers to read them.
-    match /submissions/{submissionId} {
-        allow create: if request.auth != null;
-        // This rule allows the collectionGroup query for quiz results by teachers.
-        allow get, list: if request.auth != null;
+    // Allow read/write access to all documents for any authenticated user
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
