@@ -67,7 +67,6 @@ const teacherNavItems = [
     { href: "/teacher/notes", label: "Manage Notes", icon: BookMarked },
     { href: "/teacher/quizzes", label: "Manage Quizzes", icon: HelpCircle },
     { href: "/teacher/students", label: "Students", icon: Users },
-    { href: "/teacher/announcements", label: "Announcements", icon: Megaphone },
 ]
 
 function AnnouncementCenter({ announcements, onOpenChange, open }: { announcements: Announcement[], open: boolean, onOpenChange: (open: boolean) => void }) {
@@ -111,38 +110,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [isAnnouncementCenterOpen, setIsAnnouncementCenterOpen] = useState(false);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [hasUnread, setHasUnread] = useState(false);
-
-
-  useEffect(() => {
-    async function fetchAnnouncements() {
-      try {
-        const fetchedAnnouncements = await getAnnouncements();
-        setAnnouncements(fetchedAnnouncements);
-        
-        if(fetchedAnnouncements.length > 0) {
-            const lastReadTimestamp = localStorage.getItem('lastReadAnnouncementTimestamp');
-            const latestTimestamp = fetchedAnnouncements[0].createdAt.toMillis();
-            
-            if(!lastReadTimestamp || latestTimestamp > parseInt(lastReadTimestamp, 10)) {
-                setHasUnread(true);
-            }
-        }
-      } catch (error) {
-          console.error("Failed to fetch announcements:", error);
-      }
-    }
-    if (role === 'student') {
-        fetchAnnouncements();
-    }
-  }, [role]);
-  
-  const handleOpenAnnouncementCenter = () => {
-      setIsAnnouncementCenterOpen(true);
-      if(announcements.length > 0) {
-          localStorage.setItem('lastReadAnnouncementTimestamp', announcements[0].createdAt.toMillis().toString());
-          setHasUnread(false);
-      }
-  }
 
 
   const handleLogout = async () => {
@@ -222,13 +189,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
         <header className="flex h-14 items-center justify-between border-b bg-background px-4 sm:justify-end gap-4">
           <SidebarTrigger className="sm:hidden" />
           <div className="flex items-center gap-4">
-             {!isTeacher && (
-                <Button variant="ghost" size="icon" className="relative" onClick={handleOpenAnnouncementCenter}>
-                    <Bell className="h-5 w-5"/>
-                    {hasUnread && <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-destructive" />}
-                    <span className="sr-only">Open announcements</span>
-                </Button>
-            )}
             <UserNav name={userName} email={userEmail} profileUrl={profileUrl} settingsUrl={settingsUrl} onLogout={handleLogout} />
           </div>
         </header>
@@ -236,11 +196,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
             {children}
         </main>
       </SidebarInset>
-      <AnnouncementCenter 
-        announcements={announcements} 
-        open={isAnnouncementCenterOpen} 
-        onOpenChange={setIsAnnouncementCenterOpen} 
-      />
     </SidebarProvider>
   );
 }
