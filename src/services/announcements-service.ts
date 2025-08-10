@@ -1,7 +1,7 @@
 
 'use server';
 
-import { db, auth } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import {
     collection,
     getDocs,
@@ -37,18 +37,13 @@ export async function getAnnouncements(): Promise<Announcement[]> {
 type AddAnnouncementData = {
     title: string;
     content: string;
+    authorId: string;
+    authorName: string;
 }
 
 export async function addAnnouncement(data: AddAnnouncementData): Promise<string> {
-    const user = auth.currentUser;
-    if (!user) {
-        throw new Error("User not authenticated");
-    }
-
     const newAnnouncementRef = await addDoc(announcementsCollection, {
         ...data,
-        authorId: user.uid,
-        authorName: user.displayName || 'Teacher',
         createdAt: serverTimestamp()
     });
     return newAnnouncementRef.id;
