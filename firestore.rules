@@ -3,9 +3,61 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access to all documents for any authenticated user
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+  
+    // Helper function to check if a user has the 'teacher' role.
+    function isTeacher() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
+    }
+    
+    // Helper function to check if a user is authenticated.
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Users collection:
+    // - Allow users to read their own profile.
+    // - Allow users to create their own profile document.
+    // - Teachers can read any user profile.
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isTeacher());
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Announcements collection:
+    // - Teachers can create, update, and delete announcements.
+    // - Any signed-in user can read announcements.
+    match /announcements/{announcementId} {
+      allow read: if isSignedIn();
+      allow write: if isTeacher();
+    }
+
+    // Subjects collection (and their notes subcollections):
+    // - Teachers can manage all subjects and notes.
+    // - Any signed-in user can read subjects and notes.
+    match /subjects/{subjectId}/{document=**} {
+        allow read: if isSignedIn();
+        allow write: if isTeacher();
+    }
+
+    // Quizzes collection:
+    // - Teachers can manage all quizzes.
+    // - Any signed-in user can read quizzes.
+    match /quizzes/{quizId} {
+      allow read: if isSignedIn();
+      allow write: if isTeacher();
+    }
+    
+    // Submissions collection:
+    // - Users can create their own submissions.
+    // - Users can read their own submissions.
+    // - Teachers can read any submission.
+    match /submissions/{submissionId} {
+        allow create: if isSignedIn();
+        allow read: if isSignedIn() && (isTeacher() || request.auth.uid == resource.data.studentId);
+        // Disallow updates and deletes for data integrity
+        allow update, delete: if false;
     }
   }
 }
