@@ -79,10 +79,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
     }
   }
 
-  // Combined loading check
-  if (isAuthLoading || isRoleLoading) {
+  // Combined loading check:
+  // If auth is loading, we must wait.
+  // If auth is done but we have a user, we must also wait for the role to be loaded.
+  if (isAuthLoading || (user && isRoleLoading)) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-background">
         <Loader2 className="w-12 h-12 animate-spin text-primary" />
       </div>
     );
