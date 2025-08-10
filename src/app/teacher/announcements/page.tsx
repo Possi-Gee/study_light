@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { addAnnouncement, deleteAnnouncement, getAnnouncements, Announcement } from "@/services/announcements-service";
 import { format } from "date-fns";
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function TeacherAnnouncementsPage() {
+    const { user } = useAuth();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
@@ -51,6 +53,11 @@ export default function TeacherAnnouncementsPage() {
 
     const handleCreateAnnouncement = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!user) {
+             toast({ variant: "destructive", title: "Error", description: "You must be logged in to post an announcement." });
+             return;
+        }
+
         setIsCreating(true);
         
         const formData = new FormData(e.currentTarget);
@@ -58,7 +65,12 @@ export default function TeacherAnnouncementsPage() {
         const content = formData.get('content') as string;
         
         try {
-            await addAnnouncement({ title, content });
+            await addAnnouncement({ 
+                title, 
+                content,
+                authorId: user.uid,
+                authorName: user.displayName || 'Teacher',
+            });
             toast({ title: "Success", description: "Announcement posted." });
             fetchAnnouncements();
             setIsCreateDialogOpen(false);
