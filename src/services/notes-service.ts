@@ -74,12 +74,6 @@ export async function getNotesForSubject(subjectId: string): Promise<Note[]> {
 }
 
 export async function getNoteById(noteId: string): Promise<Note | null> {
-    const notesQuery = query(
-        collectionGroup(db, 'notes'), 
-        where('__name__', '==', `subjects/${noteId.split('/subjects/')[1]}`), 
-        limit(1)
-    );
-    
     // A more robust way to find a note without knowing its subject
     const allNotesQuery = query(collectionGroup(db, 'notes'));
     const querySnapshot = await getDocs(allNotesQuery);
