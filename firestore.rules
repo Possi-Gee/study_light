@@ -1,64 +1,10 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    function isTeacher() {
-      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
-    }
-    
-    function isStudent() {
-       return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student';
-    }
-    
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
-    }
-
-    match /users/{userId} {
-      // Any authenticated user can create their own profile during signup
-      // A user can read/update their own profile
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow read, update: if isOwner(userId);
-      // Teachers can read student profiles
-      allow get: if isTeacher();
-      allow list: if isTeacher();
-    }
-    
-    match /subjects/{subjectId} {
-      // Teachers can create, update, delete subjects
-      // Students can only read subjects
-      allow read: if request.auth != null;
-      allow write: if isTeacher();
-      
-      match /notes/{noteId} {
-        // Teachers can create, update, delete notes
-        // Students can only read notes
-        allow read: if request.auth != null;
-        allow write: if isTeacher();
-      }
-    }
-    
-    match /quizzes/{quizId} {
-       // Teachers can create, update, delete quizzes
-       // Students can only read quizzes
-       allow read: if request.auth != null;
-       allow write: if isTeacher();
-    }
-    
-     match /announcements/{announcementId} {
-      // Teachers can create, update, delete announcements
-      // Students can only read announcements
-      allow read: if request.auth != null;
-      allow write: if isTeacher();
-    }
-    
-    match /submissions/{submissionId} {
-        // Students can create submissions
-        allow create: if isStudent();
-        // Students can read their own submissions
-        // Teachers can read all submissions for a quiz
-        allow read: if isStudent() || isTeacher();
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
