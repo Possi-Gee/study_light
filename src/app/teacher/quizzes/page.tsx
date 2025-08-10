@@ -105,11 +105,6 @@ export default function TeacherQuizzesPage() {
                                                     <Edit className="mr-2 h-4 w-4"/> Edit
                                                 </Button>
                                             </Link>
-                                            <Link href={`/teacher/quizzes/${quiz.id}/results`}>
-                                                <Button variant="outline" size="sm">
-                                                    <BarChart className="mr-2 h-4 w-4"/> Results
-                                                </Button>
-                                            </Link>
                                         </div>
                                         <AlertDialogTrigger asChild>
                                             <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-9 w-9" onClick={() => setDeletingQuizId(quiz.id)}>
