@@ -2,7 +2,7 @@
 'use client';
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Quiz } from "@/lib/quiz-store";
 import { deleteQuiz, getQuizzes } from "@/services/quizzes-service";
 import { FileQuestion, PlusCircle, Trash2, Edit, BarChart, Loader2, Timer } from "lucide-react";
@@ -80,13 +80,13 @@ export default function TeacherQuizzesPage() {
                     ) : quizzes.length > 0 ? (
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {quizzes.map(quiz => (
-                                <Card key={quiz.id} className="flex flex-col">
+                                <Card key={quiz.id} className="flex flex-col justify-between">
                                     <CardHeader>
                                         <div className="flex items-start justify-between">
                                             <CardTitle className="leading-tight">{quiz.title}</CardTitle>
                                             <FileQuestion className="h-6 w-6 text-primary shrink-0 ml-4"/>
                                         </div>
-                                        <div className="text-sm text-muted-foreground flex items-center gap-4">
+                                        <div className="text-sm text-muted-foreground flex items-center gap-4 pt-2">
                                             <span>{quiz.subject} - {quiz.questions.length} question(s)</span>
                                             {quiz.timer && (
                                                 <div className="flex items-center gap-1">
@@ -96,26 +96,19 @@ export default function TeacherQuizzesPage() {
                                             )}
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="flex-grow">
-                                        <Link href={`/teacher/quizzes/${quiz.id}/results`}>
-                                            <Button variant="outline" className="w-full">
-                                                <BarChart className="mr-2 h-4 w-4"/> View Results
-                                            </Button>
-                                        </Link>
-                                    </CardContent>
-                                    <CardFooter className="flex justify-between items-center mt-auto">
+                                    <CardFooter className="flex justify-end items-center">
                                         <div className="flex gap-2">
                                             <Link href={`/teacher/quizzes/${quiz.id}/edit`}>
                                                 <Button variant="outline" size="sm">
                                                     <Edit className="mr-2 h-4 w-4"/> Edit
                                                 </Button>
                                             </Link>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-9 w-9" onClick={() => setDeletingQuizId(quiz.id)}>
+                                                    <Trash2 className="h-4 w-4"/>
+                                                </Button>
+                                            </AlertDialogTrigger>
                                         </div>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-9 w-9" onClick={() => setDeletingQuizId(quiz.id)}>
-                                                <Trash2 className="h-4 w-4"/>
-                                            </Button>
-                                        </AlertDialogTrigger>
                                     </CardFooter>
                                 </Card>
                             ))}
