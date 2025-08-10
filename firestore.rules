@@ -1,39 +1,40 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
-    function isSignedIn() {
-      return request.auth != null;
+    // Allow users to read/write their own user profile
+    match /users/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
     }
 
-    // Users can read/update their own profile, teachers can read all profiles
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow update: if request.auth.uid == userId;
-      allow create: if isSignedIn();
-    }
-    
-    // Subjects can be read by anyone signed in, but only written by teachers (not yet implemented)
+    // Allow authenticated users to read subjects and quizzes
     match /subjects/{subjectId} {
-      allow read: if isSignedIn();
-      
-      // Notes can be read by anyone signed in
-      match /notes/{noteId} {
-        allow read: if isSignedIn();
-      }
+      allow read: if request.auth != null;
+      allow create: if request.auth != null; // Allow creation
+      allow write, delete: if false; // More specific rules can be added later
     }
     
-    // Quizzes can be read by anyone signed in
+    match /subjects/{subjectId}/{document=**} {
+       allow read, write: if request.auth != null;
+    }
+
     match /quizzes/{quizId} {
-       allow read, write: if isSignedIn();
+      allow read: if request.auth != null;
+      allow write: if request.auth != null; // Teachers can create/edit
     }
-    
-    // Allow signed-in users to query the submissions collection group
+
+    // Allow authenticated users to create submissions
+    match /submissions/{submissionId} {
+        allow create, read: if request.auth != null;
+    }
+
+    // This rule is for collection group queries.
+    // It allows a logged-in user to query the 'submissions' collection
+    // across all parent documents.
     match /{path=**}/submissions/{submissionId} {
-      allow read, create: if isSignedIn();
+      allow read: if request.auth != null;
     }
   }
 }
