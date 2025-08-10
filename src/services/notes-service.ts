@@ -74,18 +74,34 @@ export async function getNotesForSubject(subjectId: string): Promise<Note[]> {
 }
 
 export async function getNoteById(noteId: string): Promise<Note | null> {
-    // This query finds a note by its ID across all subjects.
-    const notesQuery = query(collectionGroup(db, 'notes'), where('__name__', '==', `subjects/${noteId.split('/')[1]}/notes/${noteId.split('/')[3]}`));
-    
-    // A more direct path if we construct the full path, but this is more complex client-side.
-    // For now, querying the collection group and finding the doc is robust.
-    const querySnapshot = await getDocs(query(collectionGroup(db, 'notes')));
-    const noteDoc = querySnapshot.docs.find(doc => doc.id === noteId);
+    const q = query(collectionGroup(db, 'notes'), where('__name__', '==', noteId));
+    const querySnapshot = await getDocs(q);
 
-    if (noteDoc) {
-        return {
-            ...(noteDoc.data() as Omit<Note, 'id'>),
-            id: noteDoc.id,
+    if (!querySnapshot.empty) {
+        const noteDoc = querySnapshot.docs[0];
+        const notePath = noteDoc.ref.path;
+
+        // Now fetch the document directly using its full path
+        const docRef = doc(db, notePath);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+             return {
+                ...(docSnap.data() as Omit<Note, 'id'>),
+                id: docSnap.id,
+            };
+        }
+    }
+   
+    // Fallback for cases where noteId might be a partial path for some reason.
+    // This is less efficient but provides a backup.
+    const allNotesSnapshot = await getDocs(collectionGroup(db, 'notes'));
+    const foundDoc = allNotesSnapshot.docs.find(d => d.id === noteId);
+
+    if (foundDoc) {
+         return {
+            ...(foundDoc.data() as Omit<Note, 'id'>),
+            id: foundDoc.id,
         };
     }
 
@@ -111,4 +127,3 @@ export async function deleteNote(subjectId: string, noteId: string): Promise<voi
     const noteDoc = doc(db, `subjects/${subjectId}/notes`, noteId);
     await deleteDoc(noteDoc);
 }
-
