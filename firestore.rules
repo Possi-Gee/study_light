@@ -1,68 +1,53 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check if a user is authenticated
-    function isAuthenticated() {
+
+    // Helper function to get the requesting user's role from the 'users' collection.
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // Helper function to check if the user is authenticated.
+    function isSignedIn() {
       return request.auth != null;
     }
 
-    // Helper function to check if the requesting user is a teacher
-    function isTeacher() {
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
-    }
-    
-    // Rules for user profiles
+    // Users can create their own profile, and can only update/delete their own profile.
+    // Any authenticated user can view other user profiles.
     match /users/{userId} {
-      // Any authenticated user can create their own user document (for registration)
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      // Users can read and update their own profile
-      allow get, update: if isAuthenticated() && request.auth.uid == userId;
-      // Teachers can read any user's profile
-      allow list: if isTeacher();
+      allow read: if isSignedIn();
+      allow create: if request.auth.uid == userId;
+      allow update, delete: if request.auth.uid == userId;
     }
 
-    // Rules for subjects and the notes within them
-    match /subjects/{subjectId} {
-      // Teachers can create, update, and delete subjects
-      allow write: if isTeacher();
-      // Any authenticated user can read subjects
-      allow get, list: if isAuthenticated();
-    }
-    
-    match /subjects/{subjectId}/notes/{noteId} {
-        // Teachers can create, update, and delete notes
-        allow write: if isTeacher();
-        // Any authenticated user can read notes
-        allow get, list: if isAuthenticated();
+    // Teachers can create/read/update/delete subjects and the notes within them.
+    // Students can only read subjects and notes.
+    match /subjects/{subjectId}/{documents=**} {
+      allow read: if isSignedIn();
+      allow write: if getUserRole() == 'teacher';
     }
 
-    // Rules for quizzes
+    // Teachers can create/read/update/delete quizzes.
+    // Students can only read quizzes.
     match /quizzes/{quizId} {
-        // Teachers can create, update, and delete quizzes
-        allow write: if isTeacher();
-        // Any authenticated user can read quizzes
-        allow get, list: if isAuthenticated();
-    }
-
-    // Rules for quiz submissions
-    match /submissions/{submissionId} {
-      // Students can create their own submissions
-      allow create: if isAuthenticated() && request.resource.data.studentId == request.auth.uid;
-      // Teachers can read any submission
-      allow get, list: if isTeacher();
-      // Students can read their own submissions
-      allow get: if isAuthenticated() && get(/databases/$(database)/documents/submissions/$(submissionId)).data.studentId == request.auth.uid;
+      allow read: if isSignedIn();
+      allow write: if getUserRole() == 'teacher';
     }
     
-    // Rules for announcements
+    // Teachers can create/read/delete announcements.
+    // Students can only read announcements.
     match /announcements/{announcementId} {
-        // Teachers can create and delete announcements
-        allow create, delete: if isTeacher();
-        // Any authenticated user can read announcements
-        allow get, list: if isAuthenticated();
+        allow read: if isSignedIn();
+        allow write: if getUserRole() == 'teacher';
+    }
+
+    // Authenticated users (students) can create their own submissions.
+    // Teachers can read all submissions.
+    match /submissions/{submissionId} {
+        allow read: if getUserRole() == 'teacher';
+        allow create: if isSignedIn();
+        allow update, delete: if false; // Submissions are immutable
     }
   }
 }
