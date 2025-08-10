@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { useEffect, useState, useLayoutEffect, useRef } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle, Download, Loader2, RefreshCw, XCircle } from 'lucide-react';
+import { useEffect, useState, useLayoutEffect, useRef, useCallback } from 'react';
+import { ArrowLeft, ArrowRight, CheckCircle, Download, Loader2, RefreshCw, Timer, XCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Quiz } from '@/lib/quiz-store';
 import { getQuizById, addQuizSubmission } from '@/services/quizzes-service';
@@ -35,6 +35,35 @@ function useWindowSize() {
   return size;
 }
 
+const QuizTimer = ({ initialMinutes, onTimeUp }: { initialMinutes: number, onTimeUp: () => void }) => {
+    const [seconds, setSeconds] = useState(initialMinutes * 60);
+
+    useEffect(() => {
+        if (seconds <= 0) {
+            onTimeUp();
+            return;
+        }
+        const timer = setInterval(() => {
+            setSeconds(prev => prev - 1);
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [seconds, onTimeUp]);
+
+    const displayMinutes = Math.floor(seconds / 60);
+    const displaySeconds = seconds % 60;
+    const isLowTime = seconds < 60;
+
+    return (
+        <div className={`flex items-center gap-2 font-semibold p-2 rounded-md ${isLowTime ? 'text-destructive animate-pulse' : 'text-muted-foreground'}`}>
+            <Timer className="h-5 w-5"/>
+            <span>
+                {String(displayMinutes).padStart(2, '0')}:{String(displaySeconds).padStart(2, '0')}
+            </span>
+        </div>
+    );
+};
+
+
 export default function QuizTakingPage() {
   const params = useParams();
   const router = useRouter();
@@ -49,6 +78,7 @@ export default function QuizTakingPage() {
   const [answers, setAnswers] = useState<AnswersState>({});
   const [showResults, setShowResults] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasSubmitted = useRef(false);
 
   const { width, height } = useWindowSize();
   const certificateRef = useRef<HTMLDivElement>(null);
@@ -81,8 +111,10 @@ export default function QuizTakingPage() {
   const scorePercentage = quizData && quizData.questions.length > 0 ? Math.round((score / quizData.questions.length) * 100) : 0;
 
 
-  const handleFinishQuiz = async () => {
-    if (!user || !quizData) return;
+  const handleFinishQuiz = useCallback(async (timedOut = false) => {
+    if (!user || !quizData || hasSubmitted.current) return;
+    
+    hasSubmitted.current = true;
     setIsSubmitting(true);
 
     try {
@@ -95,6 +127,13 @@ export default function QuizTakingPage() {
         totalQuestions: quizData.questions.length,
       });
       setShowResults(true);
+      if (timedOut) {
+          toast({
+              variant: "destructive",
+              title: "Time's Up!",
+              description: "Your quiz has been submitted automatically.",
+          });
+      }
     } catch (error) {
        console.error("Failed to submit quiz results:", error);
        toast({
@@ -102,10 +141,12 @@ export default function QuizTakingPage() {
          title: "Submission Failed",
          description: "Your results could not be saved. Please try again.",
        });
+       hasSubmitted.current = false; // Allow retry on failure
     } finally {
       setIsSubmitting(false);
     }
-  }
+  }, [user, quizData, score, toast]);
+
 
   const handleDownloadCertificate = async () => {
     if (!certificateRef.current) return;
@@ -167,6 +208,7 @@ export default function QuizTakingPage() {
   };
 
   const restartQuiz = () => {
+    hasSubmitted.current = false;
     setCurrentQuestion(0);
     setAnswers({});
     setShowResults(false);
@@ -255,9 +297,14 @@ export default function QuizTakingPage() {
                 <ArrowLeft className="mr-2 h-4 w-4"/>
                 Back to Quizzes List
             </Link>
-            <div className="space-y-2 text-center">
-            <h1 className="text-3xl font-bold tracking-tight">{quizData.title}</h1>
-            <p className="text-muted-foreground">Question {currentQuestion + 1} of {quizData.questions.length}</p>
+             <div className="space-y-2 text-center relative">
+                <h1 className="text-3xl font-bold tracking-tight">{quizData.title}</h1>
+                <p className="text-muted-foreground">Question {currentQuestion + 1} of {quizData.questions.length}</p>
+                 {quizData.timer && (
+                    <div className="absolute top-0 right-0">
+                         <QuizTimer initialMinutes={quizData.timer} onTimeUp={() => handleFinishQuiz(true)} />
+                    </div>
+                )}
             </div>
             <Progress value={((currentQuestion + 1) / quizData.questions.length) * 100} />
             <Card>
@@ -283,7 +330,7 @@ export default function QuizTakingPage() {
                     Next <ArrowRight className="ml-2 h-4 w-4"/>
                 </Button>
                 ) : (
-                <Button onClick={handleFinishQuiz} disabled={Object.keys(answers).length !== quizData.questions.length || isSubmitting}>
+                <Button onClick={() => handleFinishQuiz(false)} disabled={Object.keys(answers).length !== quizData.questions.length || isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                     Finish Quiz
                 </Button>
