@@ -1,4 +1,6 @@
 
+'use server';
+
 import { db } from "@/lib/firebase";
 import { Quiz, QuizQuestion } from "@/lib/quiz-store";
 import {
@@ -14,7 +16,8 @@ import {
     query,
     where,
     Timestamp,
-    collectionGroup
+    collectionGroup,
+    limit
 } from "firebase/firestore";
 
 const quizzesCollection = collection(db, 'quizzes');
@@ -100,6 +103,19 @@ export async function getSubmissionsForQuiz(quizId: string): Promise<QuizSubmiss
         orderBy("completedAt", "desc")
     );
     const submissionSnapshot = await getDocs(q);
+    return submissionSnapshot.docs.map(doc => ({
+        ...(doc.data() as Omit<QuizSubmission, 'id'>),
+        id: doc.id
+    }));
+}
+
+export async function getRecentSubmissions(count: number): Promise<QuizSubmission[]> {
+    const q = query(
+        submissionsCollection,
+        orderBy("completedAt", "desc"),
+        limit(count)
+    );
+     const submissionSnapshot = await getDocs(q);
     return submissionSnapshot.docs.map(doc => ({
         ...(doc.data() as Omit<QuizSubmission, 'id'>),
         id: doc.id

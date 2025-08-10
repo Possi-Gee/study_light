@@ -5,11 +5,33 @@ import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
-import { ArrowRight, BookOpen, CalendarCheck, Puzzle } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarCheck, FileQuestion, History, Loader2, Puzzle } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Quiz } from "@/lib/quiz-store";
+import { getQuizzes } from "@/services/quizzes-service";
+import { RecentActivityCard } from "@/components/recent-activity-card";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [recentQuizzes, setRecentQuizzes] = useState<Quiz[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRecentQuizzes() {
+      try {
+        const allQuizzes = await getQuizzes();
+        setRecentQuizzes(allQuizzes.slice(0, 5)); // Get the 5 most recent
+      } catch (error) {
+        console.error("Failed to fetch recent quizzes:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRecentQuizzes();
+  }, []);
+
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
@@ -67,6 +89,32 @@ export default function DashboardPage() {
                 </CardContent>
             </Card>
         </div>
+        <RecentActivityCard
+          title="Recently Added Quizzes"
+          description="Check out the newest quizzes available for you to take."
+          icon={FileQuestion}
+          loading={loading}
+        >
+            {recentQuizzes.length > 0 ? (
+                recentQuizzes.map(quiz => (
+                    <div key={quiz.id} className="flex items-center justify-between">
+                        <div className="space-y-1">
+                            <p className="font-medium">{quiz.title}</p>
+                            <p className="text-sm text-muted-foreground">{quiz.subject}</p>
+                        </div>
+                        <Link href={`/quizzes/${quiz.id}`} passHref>
+                            <Button asChild variant="secondary" size="sm">
+                                <span>Take Quiz <ArrowRight className="ml-2"/></span>
+                            </Button>
+                        </Link>
+                    </div>
+                ))
+            ) : (
+                <div className="text-center text-muted-foreground py-4">
+                    No new quizzes have been added recently.
+                </div>
+            )}
+        </RecentActivityCard>
       </div>
     </AppLayout>
   );

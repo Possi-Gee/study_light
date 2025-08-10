@@ -6,11 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/use-auth";
 import { getSubjects } from "@/services/notes-service";
-import { getQuizzes } from "@/services/quizzes-service";
+import { getQuizzes, QuizSubmission, getRecentSubmissions } from "@/services/quizzes-service";
 import { getStudents } from "@/services/user-service";
-import { BookMarked, RefreshCw, HelpCircle, Users } from "lucide-react";
+import { BookMarked, RefreshCw, HelpCircle, Users, History, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
+import { formatDistanceToNow } from "date-fns";
+import { RecentActivityCard } from "@/components/recent-activity-card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/utils";
 
 type DashboardStats = {
     subjects: number;
@@ -21,34 +25,37 @@ type DashboardStats = {
 export default function TeacherDashboardPage() {
     const { user } = useAuth();
     const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [recentSubmissions, setRecentSubmissions] = useState<QuizSubmission[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchStats = useCallback(async () => {
+    const fetchDashboardData = useCallback(async () => {
         setLoading(true);
         try {
-            const [subjects, quizzes, students] = await Promise.all([
+            const [subjects, quizzes, students, submissions] = await Promise.all([
                 getSubjects(),
                 getQuizzes(),
                 getStudents(),
+                getRecentSubmissions(5)
             ]);
             setStats({
                 subjects: subjects.length,
                 quizzes: quizzes.length,
                 students: students.length,
             });
+            setRecentSubmissions(submissions);
         } catch (error) {
-            console.error("Failed to fetch dashboard stats:", error);
+            console.error("Failed to fetch dashboard data:", error);
         } finally {
             setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchStats();
-    }, [fetchStats]);
+        fetchDashboardData();
+    }, [fetchDashboardData]);
 
     const handleRefresh = () => {
-        fetchStats();
+        fetchDashboardData();
     }
 
   return (
@@ -117,6 +124,37 @@ export default function TeacherDashboardPage() {
                 </CardContent>
             </Card>
         </div>
+
+        <RecentActivityCard
+            title="Recent Student Activity"
+            description="The latest quiz submissions from your students."
+            icon={History}
+            loading={loading}
+        >
+             {recentSubmissions.length > 0 ? (
+                recentSubmissions.map(submission => (
+                    <div key={submission.id} className="flex items-center">
+                        <Avatar className="h-9 w-9">
+                            <AvatarFallback>{getInitials(submission.studentName)}</AvatarFallback>
+                        </Avatar>
+                        <div className="ml-4 space-y-1">
+                            <p className="text-sm font-medium leading-none">
+                                {submission.studentName}
+                                <span className="font-normal text-muted-foreground"> completed the "{submission.quizTitle}" quiz.</span>
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                {formatDistanceToNow(submission.completedAt.toDate(), { addSuffix: true })}
+                            </p>
+                        </div>
+                        <div className="ml-auto font-medium text-lg">{submission.score}/{submission.totalQuestions}</div>
+                    </div>
+                ))
+             ) : (
+                <div className="text-center text-muted-foreground py-4">
+                    No student submissions yet.
+                </div>
+             )}
+        </RecentActivityCard>
       </div>
     </AppLayout>
   );
